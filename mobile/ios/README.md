@@ -234,3 +234,8 @@ Recipes prefill native Voice Design. Recordings download only on Play or a
 permission-confirmed import, with bounded HTTPS downloads and SHA-256 verification.
 No model downloads or inference start while browsing. This phone keeps engine
 presets; My computer keeps the paired library. Android implements the same flows.
+
+Physical iPhone 18 Pro verification on 2026-10-31 confirms 50 named community
+entries without pairing/models, Thalia playback, an explicit Cancel/permission
+alert, and The Librarian's correct script and traits in Voice Design. Model
+download/licence acceptance and real inference were not performed in this review.

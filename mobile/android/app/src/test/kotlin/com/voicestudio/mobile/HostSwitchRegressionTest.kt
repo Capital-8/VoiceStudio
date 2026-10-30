@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.media3.common.Player
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
@@ -183,7 +184,8 @@ class HostSwitchRegressionTest {
         val voice=vm.phone.voices.saveDesign("Imported gallery voice","Reference words",com.voicestudio.mobile.local.LocalAudio(FloatArray(4800) {.2f},24000),model,"female",42)
         vm.phone.refresh()
         val app=ApplicationProvider.getApplicationContext<Application>()
-        compose.setContent {
+        val restoration=StateRestorationTester(compose)
+        restoration.setContent {
             CompositionLocalProvider(com.voicestudio.mobile.features.LocalL10n provides com.voicestudio.mobile.l10n.L10n.load(app,"en")) {
                 com.voicestudio.mobile.designsystem.VoiceStudioTheme {
                     com.voicestudio.mobile.features.speak.SpeakScreen(vm,initialPhoneVoiceID=voice.id)
@@ -192,6 +194,10 @@ class HostSwitchRegressionTest {
         }
         compose.onNodeWithText("Imported gallery voice").assertExists()
         compose.onNodeWithText("Computer").performClick()
+        compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
+        restoration.emulateSavedInstanceStateRestore();compose.waitForIdle()
+        shadowOf(Looper.getMainLooper()).idle();vm.store.update {it}
+        assertEquals("computer",vm.preferences.value.runLocations["speak"])
         compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
         compose.onNodeWithText("This phone").performClick()
         compose.onNodeWithText("Imported gallery voice").assertExists()
