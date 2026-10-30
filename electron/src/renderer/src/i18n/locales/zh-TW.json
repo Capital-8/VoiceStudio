@@ -3429,7 +3429,7 @@
     "add_details": "新增詳情",
     "step_start": "開始",
     "step_agent": "代理",
-    "step_speak": "說話",
+    "step_speak": "語音合成",
     "step_condition": "條件",
     "step_call": "通話",
     "step_end": "結束",
@@ -3796,7 +3796,7 @@
       "brought_by": "由以下開發者為你呈現"
     },
     "tabs": {
-      "speak": "朗讀",
+      "speak": "語音合成",
       "voices": "語音",
       "dub": "配音",
       "dictate": "聽寫",
@@ -4073,7 +4073,7 @@
       "preset_voice": "語音 {{number}}",
       "transfer": "{{received}}，共 {{total}}",
       "privacy": "裝置端工作只在這支手機上執行。只有模型下載、你選擇傳送的檢舉和已配對的電腦會使用網路。",
-      "computer_feature": "此功能目前在電腦上執行。無需配對，即可在這支手機上使用朗讀和聽寫。",
+      "computer_feature": "此功能目前在電腦上執行。無需配對，即可在這支手機上使用語音合成和聽寫。",
       "accepted": "已接受授權",
       "not_accepted": "未接受授權",
       "receipt": "{{action}} · {{time}} · App {{version}} · 條款 {{fingerprint}}"

@@ -135,14 +135,14 @@ import com.voicestudio.mobile.local.*
     val selected=choices.firstOrNull {it.id==preferences.phoneModels[task]} ?: choices.firstOrNull {it.id in phone.installed&&it.fits(vm.phone.ramBytes)} ?: choices.firstOrNull()
     val ready=selected?.let {it.id in phone.installed&&it.fits(vm.phone.ramBytes)}==true&&dependencies.all {cap -> phone.models.any {it.capability==cap&&it.id in phone.installed&&it.fits(vm.phone.ramBytes)}}
     var entryLocation by rememberSaveable(initialLocation) {mutableStateOf(initialLocation)}
-    LaunchedEffect(initialLocation) {if(initialLocation!=null) vm.preference {it.copy(runLocations=it.runLocations+(task to initialLocation))}}
+    LaunchedEffect(entryLocation) {val chosen=entryLocation;if(chosen!=null) vm.store.update {it.copy(runLocations=it.runLocations+(task to chosen))}}
     val location=routeTask(entryLocation ?: preferences.runLocations[task],ready,host.connected)
     Column(Modifier.fillMaxSize()) {
         if(host.connected) Row(Modifier.fillMaxWidth().padding(horizontal=VSTheme.inset),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(VSTheme.gap)) {
                 if(LocalDensity.current.fontScale<=1.5f) Text(tr("mobile.local.run_on"),style=MaterialTheme.typography.labelSmall)
                 SingleChoiceSegmentedButtonRow(Modifier.weight(1f)) {
                     listOf("phone" to "mobile.local.this_phone","computer" to "mobile.simple.computer").forEachIndexed {index,(id,key) ->
-                        SegmentedButton(selected=(location==RunLocation.COMPUTER)==(id=="computer"),onClick={entryLocation=id;vm.phone.cancelInference();if(task=="clone"&&(location==RunLocation.COMPUTER)!=(id=="computer")) vm.cancelClone();vm.preference {it.copy(runLocations=it.runLocations+(task to id))}},shape=SegmentedButtonDefaults.itemShape(index,2)) {Text(tr(key),maxLines=1,overflow=TextOverflow.Ellipsis)}
+                        SegmentedButton(selected=(location==RunLocation.COMPUTER)==(id=="computer"),onClick={entryLocation=id;vm.phone.cancelInference();if(task=="clone"&&(location==RunLocation.COMPUTER)!=(id=="computer")) vm.cancelClone()},shape=SegmentedButtonDefaults.itemShape(index,2)) {Text(tr(key),maxLines=1,overflow=TextOverflow.Ellipsis)}
                     }
                 }
         }

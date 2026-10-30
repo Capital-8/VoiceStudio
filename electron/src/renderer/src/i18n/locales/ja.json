@@ -3429,7 +3429,7 @@
     "add_details": "詳細を追加",
     "step_start": "開始",
     "step_agent": "エージェント",
-    "step_speak": "発話",
+    "step_speak": "読み上げ",
     "step_condition": "条件",
     "step_call": "通話",
     "step_end": "終了",

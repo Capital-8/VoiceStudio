@@ -3429,7 +3429,7 @@
     "add_details": "Lägg till detaljer",
     "step_start": "Start",
     "step_agent": "Agent",
-    "step_speak": "Tala",
+    "step_speak": "Tal",
     "step_condition": "Villkor",
     "step_call": "Samtal",
     "step_end": "Slut",
@@ -3796,7 +3796,7 @@
       "brought_by": "Presenteras av"
     },
     "tabs": {
-      "speak": "Tala",
+      "speak": "Tal",
       "voices": "Röster",
       "dub": "Dubbning",
       "dictate": "Diktering",
@@ -4073,7 +4073,7 @@
       "preset_voice": "Röst {{number}}",
       "transfer": "{{received}} av {{total}}",
       "privacy": "Uppgifter på enheten stannar på telefonen. Bara modellnedladdningar, rapporter som du väljer att skicka och din parkopplade dator använder nätverket.",
-      "computer_feature": "Den här funktionen körs just nu på din dator. Du kan använda Tala och Diktering på telefonen utan parkoppling.",
+      "computer_feature": "Den här funktionen körs just nu på din dator. Du kan använda Tal och Diktering på telefonen utan parkoppling.",
       "accepted": "Licens godkänd",
       "not_accepted": "Licens inte godkänd",
       "receipt": "{{action}} · {{time}} · App {{version}} · Villkor {{fingerprint}}"

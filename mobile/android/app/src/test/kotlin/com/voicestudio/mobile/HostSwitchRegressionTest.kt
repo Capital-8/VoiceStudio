@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.media3.common.Player
 import androidx.lifecycle.viewModelScope
 import androidx.work.*
@@ -118,10 +119,10 @@ class HostSwitchRegressionTest {
     }
     @Test fun switchingCloneToPhoneCancelsTheComputerCompletion()=runBlocking<Unit> {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
-        val original=a.dispatcher;val started=java.util.concurrent.CountDownLatch(1)
+        val original=a.dispatcher;val started=java.util.concurrent.CountDownLatch(1);val release=java.util.concurrent.CountDownLatch(1)
         a.dispatcher=object:Dispatcher() {
             override fun dispatch(request:RecordedRequest):MockResponse = if(request.path=="/profiles"&&request.method=="POST") {
-                started.countDown();MockResponse().setBodyDelay(1,TimeUnit.SECONDS).setBody("""{"id":"stale-clone","name":"Stale clone"}""")
+                started.countDown();release.await(10,TimeUnit.SECONDS);MockResponse().setBody("""{"id":"stale-clone","name":"Stale clone"}""")
             } else original.dispatch(request)
         }
         val sample=java.io.File.createTempFile("location-clone-",".wav",vm.getApplication<Application>().cacheDir).apply {writeText("RIFF fixture")}
@@ -131,11 +132,10 @@ class HostSwitchRegressionTest {
             compose.onNodeWithTag("home.voices").performScrollTo().performClick()
             vm.clone("Stale clone",sample,hasConsent={true}) {completed++}
             withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
-            compose.onNodeWithText("This phone").performClick();awaitIdle()
-            delay(1100);shadowOf(Looper.getMainLooper()).idle()
+            compose.onNodeWithText("This phone").performClick();release.countDown();awaitIdle()
             assertEquals(0,completed);assertFalse(vm.state.value.canRetry)
             compose.onNodeWithText("Voice name").assertExists()
-        } finally {sample.delete()}
+        } finally {release.countDown();sample.delete()}
     }
     @Test fun failedCloneKeepsItsSampleAndOnlySuccessfulRetryCompletesCreation()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
@@ -184,7 +184,8 @@ class HostSwitchRegressionTest {
         val voice=vm.phone.voices.saveDesign("Imported gallery voice","Reference words",com.voicestudio.mobile.local.LocalAudio(FloatArray(4800) {.2f},24000),model,"female",42)
         vm.phone.refresh()
         val app=ApplicationProvider.getApplicationContext<Application>()
-        compose.setContent {
+        val restoration=StateRestorationTester(compose)
+        restoration.setContent {
             CompositionLocalProvider(com.voicestudio.mobile.features.LocalL10n provides com.voicestudio.mobile.l10n.L10n.load(app,"en")) {
                 com.voicestudio.mobile.designsystem.VoiceStudioTheme {
                     com.voicestudio.mobile.features.speak.SpeakScreen(vm,initialPhoneVoiceID=voice.id)
@@ -193,6 +194,10 @@ class HostSwitchRegressionTest {
         }
         compose.onNodeWithText("Imported gallery voice").assertExists()
         compose.onNodeWithText("Computer").performClick()
+        compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
+        restoration.emulateSavedInstanceStateRestore();compose.waitForIdle()
+        shadowOf(Looper.getMainLooper()).idle();vm.store.update {it}
+        assertEquals("computer",vm.preferences.value.runLocations["speak"])
         compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
         compose.onNodeWithText("This phone").performClick()
         compose.onNodeWithText("Imported gallery voice").assertExists()

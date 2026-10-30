@@ -85,7 +85,7 @@ Bottom navigation: **Home**, **Voices**, **Dub**, **Dictate**, **Settings**.
 Home is the default after consent. All five navigation destinations keep visible
 text labels; iOS keeps the full tab bar visible while scrolling. The Home voice
 cloning shortcut opens creation directly, while the Voices tab opens the library.
-Before a speech model is ready, Speak pins its explicit Download action in place
+Before a speech model is ready, Speech pins its explicit Download action in place
 of a disabled Generate button. Downloading still requires each model’s exact
 licence consent. Dictate explains the model download and its size before it
 invites recording. The compact hero places the wordmark and feature
@@ -97,9 +97,9 @@ Profile metadata and brand artwork derive from Electron and are bundled offline.
 External pages open only on an explicit link tap. It adapts Electron's dashboard with the same
 bundled `electron/public/signal-field.webp` artwork, generated palettes, Inter,
 card hierarchy, recent generated audio, recent dubbing projects and saved voices.
-Its working shortcuts open Speak, voice cloning, Dub, Dictate, Models, Connect
-and the M3 production workspaces below. Speak stays reachable from Home; it is not a sixth bottom tab. Recent
-phone audio plays locally, saved phone voices open Speak with that reference
+Its working shortcuts open Speech, voice cloning, Dub, Dictate, Models, Connect
+and the M3 production workspaces below. Speech stays reachable from Home; it is not a sixth bottom tab. Recent
+phone audio plays locally, saved phone voices open Speech with that reference
 selected, and project rows open that project's outputs/resume controls. Computer
 libraries are shown only from the paired host. Empty sections use localized
 empty states; Home never starts downloads or external requests on its own.
@@ -125,7 +125,7 @@ All tabs work without pairing once on-device models are installed (see M2); the 
      On 401 ask again. "Disconnect" calls `DELETE /api/auth/session`.
    - Saved hosts list (URL, label, last seen); one active host.
    - See `docs/api-auth.md`, `docs/sharing.md`.
-3. **Speak** (TTS)
+3. **Speech** (TTS)
    - Text editor, voice picker (`GET /profiles`), engine/language pickers
      from `GET /engines` and backend language data, Generate → `POST /generate`.
    - Play result in-app (streamed from the host), waveform/progress scrubber,
@@ -182,7 +182,7 @@ All tabs work without pairing once on-device models are installed (see M2); the 
   (private vs public hosts).
 - API client against a mock server: health check, PIN header, session
   exchange/revoke, 401 handling, generate, dub upload + progress.
-- UI smoke: launch → consent → connect (mocked) → Speak generates → play.
+- UI smoke: launch → consent → connect (mocked) → Speech generates → play.
 
 ## M2 — on-device inference (owner-set 2026-10-18)
 
@@ -255,7 +255,7 @@ All tabs work without pairing once on-device models are installed (see M2); the 
 
 ### Where each task runs
 
-- Every task (Speak, clone, Dictate, Dub) has **Run on: This phone / My
+- Every task (Speech, clone, Dictate, Dub) has **Run on: This phone / My
   computer**. Default: This phone when the needed model is installed; otherwise
   the computer if one is paired; otherwise an inline prompt to download the
   model (with its size). The choice is remembered per task.
@@ -304,7 +304,7 @@ offensive output; both apps ship it. The server is VoiceStudio's app API
 repository). It needs no sign-in and accepts no audio or identifiers.
 
 - **Where:** every generated result the app shows has a **Report** action,
-  whether it ran on the phone or the paired computer: a Speak result and its
+  whether it ran on the phone or the paired computer: a Speech result and its
   recent takes (`task: speak`), the cloned-voice result on Voices
   (`task: clone`) and a finished dub (`task: dub`).
 - **Sheet:** title, a required reason chosen from five (`sexual`, `hateful`,
@@ -323,7 +323,7 @@ repository). It needs no sign-in and accepts no audio or identifiers.
   | `platform` | `android` / `ios` |
   | `app_version` | root `package.json` version |
   | `task` | `speak` / `clone` / `dub` |
-  | `model_id` | phone: the `repo` from `models.json` of the model that made it (Speak: the TTS or clone model; a cloned voice: the `clone` model that generated its saved preview (legacy voices can retain their ASR attribution); a dub: its pinned `clone` model; results saved before this feature: `unknown`); computer: the engine id the host reported, else `unknown` (characters outside `0-9A-Za-z._/:-` removed, at most 128) |
+  | `model_id` | phone: the `repo` from `models.json` of the model that made it (Speech: the TTS or clone model; a cloned voice: the `clone` model that generated its saved preview (legacy voices can retain their ASR attribution); a dub: its pinned `clone` model; results saved before this feature: `unknown`); computer: the engine id the host reported, else `unknown` (characters outside `0-9A-Za-z._/:-` removed, at most 128) |
   | `model_revision` | phone only: the model's `revision` |
   | `runs_on` | `phone` / `computer` |
 
@@ -374,7 +374,7 @@ Workflows on both platforms. These are native screens; no embedded desktop UI.
   line reuses unaffected audio. Disk-streamed marked WAV and chapter outputs
   export as WAV, MP3, AAC/M4A and chaptered M4B (up to 255 chapters). The same
   pinned, source-built LAME encoder ships on both; cancellation and atomic
-  replacement preserve earlier results. Speak also exports WAV/M4A/MP3.
+  replacement preserve earlier results. Speech also exports WAV/M4A/MP3.
 - **Batch dubbing** publishes requests before enqueueing. Native durable queues
   resume checkpointed work; cancellation preserves completed segments. No watch
   folders or automatic imports. Host/source changes invalidate stale results.
@@ -441,7 +441,7 @@ Workflows on both platforms. These are native screens; no embedded desktop UI.
   SHA-256 is verified before caching, playback or import. Import requires voice
   permission, a nonempty transcript and reference up to 30 seconds. It preserves
   author/licence attribution and synthetic provenance without inference or ASR.
-  This phone retains bundled engine presets with model/speaker selection in Speak.
+  This phone retains bundled engine presets with model/speaker selection in Speech.
   My computer retains paired community browsing and stored voice-bundle copying;
   switching hosts discards those host results. All generation stays on the chosen
   device and all gallery downloads are initiated by entering Gallery or its controls.
