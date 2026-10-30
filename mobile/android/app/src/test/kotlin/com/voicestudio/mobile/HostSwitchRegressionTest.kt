@@ -66,6 +66,32 @@ class HostSwitchRegressionTest {
         vm=StudioViewModel(app,store);awaitIdle()
     }
     @After fun teardown() {vm.viewModelScope.cancel(); a.shutdown(); b.shutdown()}
+    @Test fun failedCloneKeepsItsSampleAndOnlySuccessfulRetryCompletesCreation()=runBlocking {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        val original=a.dispatcher
+        var succeeds=false
+        a.dispatcher=object:Dispatcher() {
+            override fun dispatch(request:RecordedRequest):MockResponse =
+                if(request.path=="/profiles"&&request.method=="POST") {
+                    if(succeeds) MockResponse().setBody("""{"id":"new-voice","name":"My clone"}""")
+                    else MockResponse().setResponseCode(500).setBody("""{"detail":"Clone failed"}""")
+                } else original.dispatch(request)
+        }
+        val sample=java.io.File.createTempFile("clone-review-",".wav",vm.getApplication<Application>().cacheDir)
+        sample.writeText("RIFF test fixture")
+        var completed=0
+        try {
+            vm.clone("My clone",sample) {completed++};awaitIdle()
+            assertEquals(0,completed)
+            assertTrue("A failed request must retain the original input for retry",sample.exists())
+            assertNotNull(vm.state.value.error)
+            succeeds=true
+            vm.retryError();awaitIdle()
+            assertEquals(1,completed)
+            assertFalse(sample.exists())
+            assertTrue(vm.state.value.profiles.any {it.id=="new-voice"})
+        } finally {sample.delete()}
+    }
     @Test fun generatedAudioCannotMoveToAnotherHost() = runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
         vm.generate("Test","","host-a","Auto");awaitIdle()

@@ -59,7 +59,7 @@ class FirstUseFlowsTest {
             compose.onNodeWithText("Download").assertIsEnabled().performClick()
             compose.onNodeWithText("Accept").assertIsNotEnabled()
             Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
-            compose.onNodeWithText("Close").performClick()
+            compose.onNodeWithText("Decline").performClick()
             compose.onNodeWithText("My first speech draft.").assertExists()
             Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
         }

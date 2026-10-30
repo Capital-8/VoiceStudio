@@ -171,8 +171,8 @@ visible but disabled until confirmation. Close never accepts or starts a downloa
 Language pickers have Cancel/Confirm actions and discard unconfirmed drafts.
 Large Dynamic Type, native reduced-transparency behavior and reduced-motion
 recording feedback are supported.
-Newer system materials follow the installed iOS version; tab-bar minimization is
-enabled on iOS 26 and later. Content radii and the Home wordmark size are exported
+Newer system materials follow the installed iOS version; the full labeled tab bar
+stays visible while scrolling on iOS 26 and later. Content radii and the Home wordmark size are exported
 from Electron's theme alongside the shared palette. Smoke networking and credentials
 are compiled only into Debug builds for UI automation.
 
@@ -191,7 +191,8 @@ bundled in `Resources/Contributors.xcassets`, mirror
 `scripts/update_contributors.py` and are never fetched at runtime; tapping one opens the
 profile in the browser. Dub is one big source card with an animated vector mark
 (`DubGlyph`, static under Reduce Motion), language and voice tiles, a consent row and live
-job cards. The bottom dock is icon-only; tab names remain accessibility labels.
+job cards. The bottom dock keeps visible tab names alongside its icons and exposes
+the same names to accessibility.
 
 The phone screenshot tour scopes Close to each native sheet and waits for the
 sheet to disappear before interacting with the underlying screen. Settings rows

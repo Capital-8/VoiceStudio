@@ -1,6 +1,15 @@
 import XCTest
 
 final class PhoneScreens: XCTestCase {
+    @MainActor func testNavigationKeepsAllDestinationsReachableAfterScrolling() {
+        let app = launch()
+        app.swipeUp()
+        for name in ["Home", "Voices", "Dub", "Dictate", "Settings"] {
+            let tab = app.tabBars.buttons[name]
+            XCTAssertTrue(tab.isHittable, name)
+            XCTAssertGreaterThanOrEqual(tab.frame.height, 44)
+        }
+    }
     @MainActor func testFirstUseOffersSpeechSetupWithoutLosingTheDraft() {
         let app = launch()
         let editor = app.textViews["speak.text"]
