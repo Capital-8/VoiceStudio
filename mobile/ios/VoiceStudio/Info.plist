@@ -5,7 +5,7 @@
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
 		<string>com.voicestudio.mobile.dub-monitor</string>
-		<string>sh.voicestudio.mobile.processing.*</string>
+		<string>sh.voicestudio.mobile.development.processing.*</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

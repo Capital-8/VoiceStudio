@@ -124,7 +124,7 @@ struct PhoneJobState: Sendable {
         if #available(iOS 26.0, *), let recipe = recipes[id], UIApplication.shared.applicationState != .background {
             guard !gpu || supportsGPU else { return }
             closeContinuation(id: id,success: false)
-            let identifier = "sh.voicestudio.mobile.processing."+UUID().uuidString
+            let identifier = "sh.voicestudio.mobile.development.processing."+UUID().uuidString
             schedulerIDs[id] = identifier
             states[id]?.phase = gpu ? .requestingGPU : .requestingCPU
             let registered = BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier,using: .main) { task in
