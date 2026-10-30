@@ -42,8 +42,8 @@ struct GalleryView: View {
                                 LocalDownloadPrompt(items: [item],feature: "nav.gallery")
                             }
                             ForEach(speakers(item),id: \.self) { speaker in
-                                NavigationLink { SpeakView(initialPhonePreset: speaker,initialPhoneModelID: item.id) } label: { Label(model.t("mobile.local.preset_voice",["number": String(speaker+1)]),systemImage: "waveform") }
-                                    .frame(minHeight: 44).accessibilityIdentifier("gallery.preset.\(item.id).\(speaker)")
+                                NavigationLink { SpeakView(initialPhonePreset: speaker,initialPhoneModelID: item.id) } label: { Label(model.t("mobile.local.preset_voice",["number": String(speaker+1)]),systemImage: "waveform").frame(maxWidth: .infinity,minHeight: 44,alignment: .leading) }
+                                    .accessibilityIdentifier("gallery.preset.\(item.id).\(speaker)")
                             }
                         }
                     }
