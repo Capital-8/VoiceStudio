@@ -6,6 +6,7 @@ final class PhoneScreens: XCTestCase {
         app.launch(); app.declineConsent()
         let gallery = app.buttons["home.gallery"]
         app.reveal(gallery); gallery.tap()
+        app.buttons["Gallery"].tap(); app.buttons["choice.option.phone"].tap()
         let first = app.buttons["gallery.preset.kitten-mini-en-fp16.0"]
         XCTAssertTrue(first.waitForExistence(timeout: 5))
         app.reveal(first); first.tap()
@@ -20,6 +21,25 @@ final class PhoneScreens: XCTestCase {
         XCTAssertEqual(app.buttons["Models"].value as? String,"Kokoro")
         XCTAssertEqual(app.buttons["Voice"].value as? String,"Voice 103")
         XCTAssertTrue(app.buttons["models.get"].isEnabled)
+    }
+    @MainActor func testCommunityGalleryShowsNamedVoicesAndOpensARealRecipeWithoutPairing() {
+        let app = XCUIApplication(); app.launchArguments = ["--ui-smoke", "-AppleLanguages", "(en)"]
+        app.launch(); app.declineConsent()
+        let gallery = app.buttons["home.gallery"]; app.reveal(gallery); gallery.tap()
+        XCTAssertTrue(app.staticTexts["The Librarian"].waitForExistence(timeout: 5))
+        let search = app.textFields["search.field"]
+        search.tap(); search.typeText("Thalia"); app.buttons["keyboard.done"].tap()
+        XCTAssertTrue(app.staticTexts["Thalia"].waitForExistence(timeout: 5))
+        let use = app.buttons["Use voice"]; app.reveal(use); use.tap()
+        XCTAssertTrue(app.buttons["I have permission"].waitForExistence(timeout: 5))
+        app.buttons["Cancel"].tap()
+        app.reveal(search, swipingDown: true); search.tap(); search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue,count: 6)+"The Librarian")
+        app.buttons["keyboard.done"].tap()
+        let recipe = app.buttons["gallery.community.use.feat_00_the_librarian"]
+        app.reveal(recipe); recipe.tap()
+        XCTAssertTrue(app.textFields["design.script"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.textFields["design.script"].value as? String,"The valley had been quiet for a hundred years, and tonight, for the first time, something stirred beneath the old stone bridge.")
+        XCTAssertEqual(app.buttons["Gender"].value as? String,"female")
     }
     @MainActor func testNavigationKeepsAllDestinationsReachableAfterScrolling() {
         let app = launch()

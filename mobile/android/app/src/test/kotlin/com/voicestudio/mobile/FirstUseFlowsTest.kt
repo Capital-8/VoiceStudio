@@ -101,8 +101,9 @@ class FirstUseFlowsTest {
             compose.onNodeWithText("Use voice").performScrollTo().performClick()
             compose.onNodeWithText("The Librarian").assertExists()
             compose.onNodeWithText("female, middle-aged, low pitch, british accent").assertDoesNotExist() // recipe is parsed into editable traits
-            compose.onNodeWithText("Female").assertExists()
-            compose.onNodeWithText("Script").assertExists()
+            compose.waitUntil(5000) {compose.onAllNodes(hasText("female")).fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithText("female").assertExists()
+            compose.onNodeWithText("The valley had been quiet for a hundred years, and tonight, for the first time, something stirred beneath the old stone bridge.").assertExists()
             Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
         }
     }

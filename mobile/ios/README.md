@@ -226,7 +226,11 @@ before generation, and Dictate explains the required download. The same first-us
 flows are implemented on Android. Licence acceptance remains explicit and closing
 a review preserves the speech draft without starting a download.
 
-Gallery now lists the bundled phone presets before model installation, including
-search by voice name. Selecting a preset opens Speak with that model and speaker;
-model download and exact-terms consent remain explicit. Community voices continue
-to use the paired computer, with pairing guidance shown when disconnected.
+Gallery opens the public [community catalogue](https://github.com/debpalash/omnivoice-gallery)
+directly on the phone: named design recipes, recorded voices, packs and language
+filters, with author and licence credits. A bundled snapshot and validated cache
+keep browsing useful offline; opening Gallery refreshes its public manifest.
+Recipes prefill native Voice Design. Recordings download only on Play or a
+permission-confirmed import, with bounded HTTPS downloads and SHA-256 verification.
+No model downloads or inference start while browsing. This phone keeps engine
+presets; My computer keeps the paired library. Android implements the same flows.
