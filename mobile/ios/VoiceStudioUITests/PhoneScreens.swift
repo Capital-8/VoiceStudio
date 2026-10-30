@@ -1,6 +1,26 @@
 import XCTest
 
 final class PhoneScreens: XCTestCase {
+    @MainActor func testGalleryBrowsesPresetsBeforeDownloadAndSearchesVoiceNames() {
+        let app = XCUIApplication(); app.launchArguments = ["--ui-smoke", "-AppleLanguages", "(en)"]
+        app.launch(); app.declineConsent()
+        let gallery = app.buttons["home.gallery"]
+        app.reveal(gallery); gallery.tap()
+        let first = app.buttons["gallery.preset.kitten-mini-en-fp16.0"]
+        XCTAssertTrue(first.waitForExistence(timeout: 5))
+        app.reveal(first); first.tap()
+        XCTAssertTrue(app.buttons["models.get"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["speak.generate"].exists)
+        app.buttons["BackButton"].tap()
+        let search = app.textFields["search.field"]
+        app.reveal(search, swipingDown: true); search.tap(); search.typeText("Voice 103")
+        app.buttons["keyboard.done"].tap()
+        let last = app.buttons["gallery.preset.kokoro-multi-int8.102"]
+        XCTAssertTrue(last.waitForExistence(timeout: 5)); app.reveal(last); last.tap()
+        XCTAssertEqual(app.buttons["Models"].value as? String,"Kokoro")
+        XCTAssertEqual(app.buttons["Voice"].value as? String,"Voice 103")
+        XCTAssertTrue(app.buttons["models.get"].isEnabled)
+    }
     @MainActor func testNavigationKeepsAllDestinationsReachableAfterScrolling() {
         let app = launch()
         app.swipeUp()

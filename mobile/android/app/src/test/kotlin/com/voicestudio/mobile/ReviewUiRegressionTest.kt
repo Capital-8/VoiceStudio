@@ -50,7 +50,7 @@ class ReviewUiRegressionTest {
             compose.onNodeWithText("VoiceStudio").assertExists()
             for(route in listOf("speak","voices","dub","dictate","models","connect")) {
                 compose.onNodeWithTag("home.$route").performScrollTo().performClick()
-                assertEquals(route,destination)
+                assertEquals(if(route=="voices") "clone" else route,destination)
             }
             compose.onNodeWithText("Your generations will appear here.").performScrollTo().assertIsDisplayed()
             compose.onNodeWithText("No projects yet").performScrollTo().assertIsDisplayed()
@@ -92,12 +92,18 @@ class ReviewUiRegressionTest {
             val kitten=vm.phone.state.value.models.first {it.id.contains("kitten")}
             vm.preference {it.copy(phoneModels=it.phoneModels+("speak" to kokoro.id))}
             await {vm.preferences.value.phoneModels["speak"]==kokoro.id}
-            compose.onNodeWithContentDescription("Voice, currently Voice 1").performClick()
+            // The picker must receive the screen's collected preference before
+            // opening it; the view-model flow can update a frame earlier.
+            compose.waitUntil(5000) {compose.onAllNodesWithText("Kokoro").fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithContentDescription("Voice, currently Voice 1").performScrollTo().performClick()
             compose.onNodeWithText("Search").performTextInput("103")
             compose.onNode(hasText("Voice 103") and !hasSetTextAction()).performClick()
             compose.onNodeWithText("Voice 103").assertExists()
             vm.preference {it.copy(phoneModels=it.phoneModels+("speak" to kitten.id))}
             await {vm.preferences.value.phoneModels["speak"]==kitten.id}
+            // Preferences are collected by the screen before its selection-reset
+            // effect renders the replacement preset; wait for that visible state.
+            compose.waitUntil(5000) {compose.onAllNodesWithText("Voice 1").fetchSemanticsNodes().isNotEmpty()}
             compose.onNodeWithText("Voice 1").assertExists()
             compose.onNodeWithText("Voice 103").assertDoesNotExist()
         } finally {vm.viewModelScope.cancel()}

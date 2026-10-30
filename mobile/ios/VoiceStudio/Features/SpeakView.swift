@@ -88,7 +88,7 @@ struct SpeakView: View {
                 Task { await model.perform { try await model.api().deleteHistory(item.id); model.history = try await model.api().history() } }
             }
         }
-        .onAppear { if let initialText,text.isEmpty { text = initialText }; hostScope = model.hostState.scopeID; preference = initialPhoneVoiceID == nil && initialPhonePreset == nil ? model.phone.preference("speak") : .phone; if let id = initialPhoneVoiceID { speakerID = "phone:" + id }; if let preset = initialPhonePreset { speakerID = String(preset); if let id = initialPhoneModelID { phoneModelID = id; model.phone.chooseModel("speak",id) } }; if let id = initialComputerVoiceID { preference = .computer; selection.chooseProfile(id, profiles: model.profiles, inventory: model.inventory, catalog: model.languages) } }
+        .onAppear { if let initialText,text.isEmpty { text = initialText }; hostScope = model.hostState.scopeID; preference = initialPhoneVoiceID == nil && initialPhonePreset == nil ? model.phone.preference("speak") : .phone; if let id = initialPhoneVoiceID { speakerID = "phone:" + id }; if let preset = initialPhonePreset { speakerID = String(preset); if let id = initialPhoneModelID { phoneModelID = id; model.phone.chooseModel("speak-tts",id) } }; if let id = initialComputerVoiceID { preference = .computer; selection.chooseProfile(id, profiles: model.profiles, inventory: model.inventory, catalog: model.languages) } }
         .task { await model.phone.refresh(); reconcilePhone() }
         .onChange(of: speakerID) { _, _ in reconcilePhone() }
         .onChange(of: phoneModel?.id) { _, _ in reconcilePhone() }

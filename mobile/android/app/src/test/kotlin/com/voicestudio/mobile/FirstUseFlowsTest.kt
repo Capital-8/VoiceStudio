@@ -73,4 +73,30 @@ class FirstUseFlowsTest {
             compose.onNodeWithText("Download").assertIsEnabled()
         }
     }
+
+    @Test fun galleryCanBrowseAndSelectPresetsBeforeDownloadingModels()=runBlocking {
+        withPhone {vm ->
+            compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.onNodeWithText("Kitten").assertExists()
+            compose.onNodeWithTag("gallery.preset.kitten-mini-en-fp16.0").performScrollTo().performClick()
+            compose.waitUntil(5000) {compose.onAllNodes(hasText("Type what you want to hear…") and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithText("Kitten").assertExists()
+            compose.onNodeWithText("Download").assertIsEnabled()
+            Assert.assertTrue(vm.phone.state.value.installed.isEmpty())
+            Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
+        }
+    }
+
+    @Test fun gallerySearchFindsTheVoiceAndRetainsItsModelSelection()=runBlocking {
+        withPhone {vm ->
+            compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.onNodeWithText("Search voices").performTextInput("Voice 103")
+            compose.onNodeWithTag("gallery.preset.kokoro-multi-int8.102").performScrollTo().performClick()
+            compose.waitUntil(5000) {compose.onAllNodes(hasText("Type what you want to hear…") and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithText("Kokoro").assertExists()
+            compose.onNodeWithText("Voice 103").assertExists()
+            compose.onNodeWithText("Download").assertIsEnabled()
+            Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
+        }
+    }
 }
