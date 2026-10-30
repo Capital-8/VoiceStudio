@@ -427,8 +427,11 @@ Workflows on both platforms. These are native screens; no embedded desktop UI.
   gain, actual peak normalization with a −50 dBFS silence guard, and a noise gate.
   It preserves source media and synthetic provenance, supports WAV/M4A/MP3,
   and never loads a model or marks natural-only DSP as synthetic.
-- **Gallery** defaults to installed phone presets and opens Speak with the
-  selected model/speaker. My computer loads the paginated community catalogue
+- **Gallery** browses all bundled phone preset choices before any models are
+  installed, searches both model and localized voice names, and opens Speak with
+  the selected model/speaker. Download/consent and RAM requirements remain visible;
+  browsing never starts downloads or inference. My computer explains pairing when
+  unpaired and loads the paginated community catalogue
   through the paired client, displays author/licence/language, previews only on
   Play and materializes a host profile only on Use voice. Host changes discard
   gallery results, preview and selected profiles. Copy to phone requires a separate

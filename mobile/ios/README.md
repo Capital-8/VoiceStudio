@@ -225,3 +225,8 @@ keeps visible labels, Home opens clone creation directly, Speak pins model setup
 before generation, and Dictate explains the required download. The same first-use
 flows are implemented on Android. Licence acceptance remains explicit and closing
 a review preserves the speech draft without starting a download.
+
+Gallery now lists the bundled phone presets before model installation, including
+search by voice name. Selecting a preset opens Speak with that model and speaker;
+model download and exact-terms consent remain explicit. Community voices continue
+to use the paired computer, with pairing guidance shown when disconnected.
