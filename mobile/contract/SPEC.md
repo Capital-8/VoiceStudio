@@ -214,10 +214,27 @@ All tabs work without pairing once on-device models are installed (see M2); the 
   credit, rights holder). A phone model **must** have a registry entry; adding
   one follows `docs/licensing/model-review-workflow.md`. The contract test fails
   on drift, on a missing registry entry, or on a file without a checksum.
-- Initial set: KittenTTS mini and Kokoro multi-language (TTS), Whisper tiny/base
-  and a streaming Zipformer (dictation), OmniVoice-GGUF `Q4_K_M` (cloning), and
-  one small instruct LLM for translation (chosen through the review workflow;
-  must be commercial-OK or accepted like any other gated model).
+- Speech offers KittenTTS mini, Kokoro multi-language, Piper Lessac, Supertonic 3,
+  Pocket TTS, ZipVoice and OmniVoice-GGUF `Q4_K_M`. Piper/Supertonic use preset
+  voices; Pocket/ZipVoice require a saved reference (ZipVoice also uses its
+  transcript); OmniVoice supports both saved-reference cloning and neutral voice
+  design. Reference-only models show guidance and disable Generate until a saved
+  voice is selected. Model selection is independent of voice selection; choosing
+  a preset-only engine clears an incompatible saved voice. Voice Design lists
+  only engines that actually support design. Nothing is downloaded by selecting
+  a model. Licence review and explicit installation still apply to every pack.
+  Whisper tiny/base and streaming Zipformer provide dictation, and a small
+  instruct LLM provides translation.
+- Model files normally resolve from their repository's fixed revision. Separate
+  components may specify an allowlisted HTTPS `url` (fixed HF revision or the
+  k2-fsa sherpa-onnx ONNX release assets), or a safe `bundled` path relative to the
+  contract resources. Both retain mandatory byte counts and SHA-256 checks;
+  bundled frontend data is copied only during explicit model installation and
+  can finish offline. ZipVoice includes its separately pinned Vocos vocoder,
+  English eSpeak files and bundled bilingual lexicon. User voice recordings are
+  never included in model downloads. Pocket's conflicting conversion terms are
+  disclosed conservatively as non-commercial; Piper's training-data rights remain
+  unresolved in the review. Existing model fingerprints are unchanged.
 - `models.json` shape (both apps decode exactly this; unknown keys ignored):
 
   ```json

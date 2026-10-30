@@ -82,6 +82,26 @@ class ReviewUiRegressionTest {
             compose.onNode(hasText("Connect") and hasClickAction()).performScrollTo().assertIsEnabled()
         } finally {vm.viewModelScope.cancel()}
     }
+    @Test fun speechOffersAllEnginesAndRequiresSavedVoiceForReferenceOnlyModels() {
+        shadowOf(app.getSystemService(android.app.ActivityManager::class.java)).setMemoryInfo(android.app.ActivityManager.MemoryInfo().apply {totalMem=16_000_000_000})
+        val vm=vm()
+        try {
+            content {SpeakScreen(vm)}
+            await {!vm.phone.state.value.loading&&vm.phone.state.value.models.isNotEmpty()}
+            compose.waitUntil(5000) {compose.onAllNodesWithText("Kitten").fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithContentDescription("Model, currently Kitten").performScrollTo().performClick()
+            for(name in listOf("Kitten","Kokoro","OmniVoice","Piper","Supertonic 3","Pocket TTS","ZipVoice")) {
+                compose.onNodeWithText("Search").performTextReplacement(name)
+                compose.onAllNodes(hasText(name) and hasClickAction() and !hasSetTextAction()).onLast().assertExists()
+            }
+            compose.onNodeWithText("Search").performTextReplacement("Pocket TTS")
+            compose.onNode(hasText("Pocket TTS") and hasClickAction() and !hasSetTextAction()).performScrollTo().performClick()
+            compose.onNodeWithText("Choose a saved voice to use this model. You can import one from Gallery.").performScrollTo().assertExists()
+            assertTrue(vm.phone.state.value.installed.isEmpty())
+            assertNull(vm.phone.state.value.progress)
+            compose.onNodeWithText("Voice 1").assertDoesNotExist()
+        } finally {vm.viewModelScope.cancel()}
+    }
     @Test fun modelSwitchDropsOutOfRangePresetImmediately() {
         shadowOf(app.getSystemService(android.app.ActivityManager::class.java)).setMemoryInfo(android.app.ActivityManager.MemoryInfo().apply {totalMem=16_000_000_000})
         val vm=vm()

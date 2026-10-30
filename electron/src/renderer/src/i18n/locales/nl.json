@@ -3844,7 +3844,8 @@
       "unstar": "Ster verwijderen",
       "engine_unavailable": "Deze engine is niet beschikbaar. Controleer de installatie ervan op je computer.",
       "voice_default": "Standaardstem (engine-voorinstelling)",
-      "engine_no_cloning": "Deze engine kan geen referentieaudio gebruiken. Kies een engine die stemklonen ondersteunt of gebruik de standaardstem."
+      "engine_no_cloning": "Deze engine kan geen referentieaudio gebruiken. Kies een engine die stemklonen ondersteunt of gebruik de standaardstem.",
+      "reference_required": "Kies een opgeslagen stem om dit model te gebruiken. Je kunt er een importeren uit de galerij."
     },
     "voices": {
       "search": "Stemmen zoeken",

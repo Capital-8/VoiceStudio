@@ -639,3 +639,77 @@ private final class Flag: @unchecked Sendable {
     func set() { lock.withLock { flag = true } }
     var value: Bool { lock.withLock { flag } }
 }
+
+@Test func localSpeechFamiliesKeepReferenceRequirementsAndPinnedAssetSources() throws {
+    let models = try ModelCatalogue.decode(Data(contentsOf: repository.appendingPathComponent("mobile/contract/models.json"))).models
+    #expect(models.filter(\.supportsSpeech).count == 7)
+    #expect(models.filter(\.supportsDesign).map(\.id) == ["omnivoice-q4-k-m"])
+    for id in ["pocket-tts-int8-en", "zipvoice-distill-int8-zh-en"] {
+        let model = try #require(models.first { $0.id == id })
+        #expect(model.requiresReference && model.supportsCloning && model.supports(.tts))
+        #expect(model.config["num_speakers"]?.number == 0)
+    }
+    #expect(ModelAssetSource.validURL("https://github.com/k2-fsa/sherpa-onnx/releases/download/vocoder-models/vocos_24khz.onnx"))
+    #expect(ModelAssetSource.validURL("https://huggingface.co/owner/model/resolve/" + String(repeating: "a",count: 40) + "/encoder.onnx"))
+    for url in ["https://github.com/other/repo/releases/download/tag/model.onnx", "https://huggingface.co/owner/model/resolve/main/model.onnx", "https://huggingface.co/owner/model/resolve/" + String(repeating: "a",count: 40) + "/../outside", "http://github.com/k2-fsa/sherpa-onnx/releases/download/tag/model.onnx"] { #expect(!ModelAssetSource.validURL(url)) }
+    #expect(!ModelAssetSource.validBundled("../outside"))
+}
+
+@Test func localBundledSpeechFrontendInstallsOfflineAndRejectsCorruption() async throws {
+    let root = try localDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+    let assets = root.appendingPathComponent("assets/tts"); try FileManager.default.createDirectory(at: assets,withIntermediateDirectories: true)
+    let bytes = Data("model".utf8)
+    let encoded = try JSONEncoder().encode(localFixture(bytes: bytes))
+    var object = try #require(JSONSerialization.jsonObject(with: encoded) as? [String:Any])
+    var files = try #require(object["files"] as? [[String:Any]])
+    files[0]["bundled"] = "tts/frontend.txt"; object["files"] = files
+    let catalogue: [String:Any] = ["schema_version":1,"models":[object]]
+    let model = try ModelCatalogue.decode(JSONSerialization.data(withJSONObject: catalogue)).models[0]
+    let store = try ModelStore(root: root.appendingPathComponent("models"),bundledRoot: assets.deletingLastPathComponent())
+    let host = RangeServer(bytes: bytes)
+    try Data("wrong".utf8).write(to: assets.appendingPathComponent("frontend.txt"))
+    await #expect(throws: (any Error).self) { try await store.download(model,wifi: { false },transport: host) }
+    #expect(await !store.installed(model))
+    try bytes.write(to: assets.appendingPathComponent("frontend.txt"))
+    try await store.download(model,wifi: { false },transport: host)
+    #expect(await store.installed(model))
+    #expect(await host.requests.isEmpty)
+}
+
+@Test(.enabled(if: ProcessInfo.processInfo.environment["VOICESTUDIO_REAL_SPEECH"] == "1"),
+      arguments: ["piper-lessac-en-medium", "supertonic3-int8", "pocket-tts-int8-en", "zipvoice-distill-int8-zh-en"])
+func realSpeechModelsProduceMarkedAudioOffline(id: String) async throws {
+    let models = try ModelCatalogue.decode(Data(contentsOf: repository.appendingPathComponent("mobile/contract/models.json"))).models
+    let model = try #require(models.first { $0.id == id })
+    let store = try ModelStore(root: repository.appendingPathComponent("mobile/ios/.cache/inference-models"))
+    // A fixture receipt is independent of the installed app's licence decisions.
+    try await store.accept(model,fingerprint: model.licence.terms_fingerprint,appVersion: "inference-test",accepted: true)
+    let engine = NativeLocalEngine(store: store,libraries: [.sherpa: try #require(ProcessInfo.processInfo.environment["SHERPA_ONNX_LIBRARY"])])
+    let phrase = "Hello. This is a local speech test."
+    let audio: LocalAudio
+    if model.requiresReference {
+        let referenceModel = try #require(models.first { $0.id == "piper-lessac-en-medium" })
+        try await store.accept(referenceModel,fingerprint: referenceModel.licence.terms_fingerprint,appVersion: "inference-test",accepted: true)
+        let referenceText = "The quick brown fox jumps over the lazy dog. This is a local speech test."
+        let reference = try await engine.synthesize(model: referenceModel,text: referenceText)
+        let decoded = try localDirectory(); defer { try? FileManager.default.removeItem(at: decoded) }
+        let referenceURL = decoded.appendingPathComponent("reference.wav")
+        try reference.markSynthetic().write(to: referenceURL)
+        let pcm = try await AVPhoneAudioDecoder().decode(source: referenceURL,output: decoded.appendingPathComponent("reference.pcm"),maxSeconds: 30,progress: { _ in })
+        audio = try await engine.clone(model: model,text: phrase,reference: pcm.read(start: 0,count: pcm.frames),referenceText: referenceText)
+    } else { audio = try await engine.synthesize(model: model.selectingLanguage("en"),text: phrase) }
+    #expect(audio.sampleRate == Int(model.config["sample_rate"]?.number ?? 24000))
+    #expect(audio.samples.count > audio.sampleRate / 2)
+    #expect(audio.samples.allSatisfy { $0.isFinite })
+    #expect(audio.samples.contains { abs($0) > 0.01 })
+    if id == "supertonic3-int8" {
+        let alternate = try await engine.synthesize(model: model.selectingLanguage("es"),text: "Hola. Esta es una prueba de voz local.",speaker: 9)
+        #expect(alternate.sampleRate == 44100)
+        #expect(alternate.samples.contains { abs($0) > 0.01 })
+    }
+    let wave = try audio.markSynthetic()
+    #expect(wave.range(of: Data("VoiceStudio synthetic audio".utf8)) != nil)
+    let output = repository.appendingPathComponent("mobile/ios/.generated/" + id + "-speech.wav")
+    try wave.write(to: output)
+    print("Speech inference \(id): \(Double(audio.samples.count)/Double(audio.sampleRate)) seconds at \(audio.sampleRate) Hz")
+}

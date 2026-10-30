@@ -59,7 +59,7 @@ public actor PhoneVoiceStore {
         }.sorted { $0.createdAt > $1.createdAt }
     }
     public func create(name: String, source: URL, consent: Bool, asr: PhoneModel, cloneModel: PhoneModel, engine: any LocalEngine, decoder: any PhoneAudioDecoder, progress: @escaping EngineProgressHandler = { _ in }) async throws -> PhoneVoice {
-        guard consent, asr.capability == .asr, cloneModel.capability == .clone, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, name.count <= 200 else { throw ClientError("mobile.simple.clone_failed") }
+        guard consent, asr.capability == .asr, cloneModel.supportsCloning, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, name.count <= 200 else { throw ClientError("mobile.simple.clone_failed") }
         let id = UUID(), now = Date()
         // Publish metadata only after extraction and successful ASR. Failed/cancelled work leaves no voice.
         let actualDir = root.appendingPathComponent(id.uuidString)

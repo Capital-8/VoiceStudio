@@ -60,7 +60,7 @@ Choose an installed simulator name. The native build verifies pinned artifacts, 
 
 ## Phone inference and models
 
-`VoiceStudioKit/LocalEngine` is the single feature-facing interface: synthesize, clone, transcribe, streamTranscribe and translate. C runtime handles remain on detached workers; an atomic cancellation token crosses tasks. The process-wide native permit and model file lease remain owned by that worker until native cleanup finishes, including after cancellation and for streaming. TTS uses sherpa Kitten/Kokoro, offline ASR uses Whisper, and streaming ASR uses the catalogue's Zipformer family. Streaming preserves endpoint finals, produces a final session transcript and rejects sample-rate changes. Whisper handles long input in 20-second windows while reusing the recognizer. Its native decode has no abort callback: cancellation is checked between windows and the current decode must return before cleanup. TTS and OmniVoice cancel through their native callbacks; llama checks between tokens and through its CPU abort callback. Progress reports loading/running/finished; native APIs without fractional callbacks remain indeterminate during the current step. Every locally generated WAV passes `markSynthetic`, which adds a synthetic-audio INFO comment.
+`VoiceStudioKit/LocalEngine` is the single feature-facing interface: synthesize, clone, transcribe, streamTranscribe and translate. C runtime handles remain on detached workers; an atomic cancellation token crosses tasks. The process-wide native permit and model file lease remain owned by that worker until native cleanup finishes, including after cancellation and for streaming. TTS uses sherpa Kitten/Kokoro/Piper/Supertonic; Pocket TTS and ZipVoice use sherpa reference cloning, offline ASR uses Whisper, and streaming ASR uses the catalogue's Zipformer family. Streaming preserves endpoint finals, produces a final session transcript and rejects sample-rate changes. Whisper handles long input in 20-second windows while reusing the recognizer. Its native decode has no abort callback: cancellation is checked between windows and the current decode must return before cleanup. TTS and OmniVoice cancel through their native callbacks; llama checks between tokens and through its CPU abort callback. Progress reports loading/running/finished; native APIs without fractional callbacks remain indeterminate during the current step. Every locally generated WAV passes `markSynthetic`, which adds a synthetic-audio INFO comment.
 
 Speech, clone, Dictate and Dub remember independent This phone / Computer choices. Without a choice, a compatible installed and accepted phone model wins; otherwise a paired computer wins; otherwise a compact download card offers Get and links to Models. A remembered computer choice falls back to the phone or Models prompt while unpaired, matching Android, and applies again after pairing. Speech offers three compact pickers (voice, model, language), a text box, Generate and the existing playback, waveform, seeking, sharing and saving controls. Its phone voice picker includes presets and saved references; reference voices select OmniVoice rather than preset TTS. Phone generations persist locally and can be played or deleted in Recent. Dictate captures mono PCM16 at 16 kHz and sends it directly to `LocalEngine` on the phone route. Neither phone path requires a computer or makes a network request.
 
@@ -249,3 +249,17 @@ seconds including UI overhead, and playback ran on the phone without a paired
 computer. Two presets produced different non-silent audio; pause, resume and
 end-of-file replay passed, and the saved WAV retained its synthetic marker.
 Community design/cloning inference still needs its separate model setup.
+
+Speech exposes all seven phone speech engines in its Models picker. Preset engines
+can generate without a saved voice; Pocket TTS and ZipVoice require a saved voice,
+and OmniVoice can use either a saved reference or neutral voice design. Selecting
+a preset-only engine clears an incompatible reference. Downloads stay explicit
+and licence-gated; no user test recordings ship with the model packs. ZipVoice's
+vocoder, pronunciation data and lexicon are size/hash verified with its weights.
+Voice Design remains limited to OmniVoice. The same choices ship on Android.
+
+For the four new packs, explicitly prepare fixtures with
+`python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences --speech-models`.
+Run `realSpeechModelsProduceMarkedAudioOffline` with `VOICESTUDIO_REAL_SPEECH=1`,
+`SHERPA_ONNX_LIBRARY` pointing to the pinned macOS runtime. The tests generate
+their own Piper reference and decode it to 24 kHz for cloning. These fixture receipts never accept terms in the phone app.

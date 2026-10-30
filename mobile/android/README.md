@@ -313,7 +313,7 @@ A changed fingerprint or withdrawal blocks use without deleting weights.
 offline transcription, streaming transcription and translation. Feature screens
 call only this interface. Timed ASR exposes speech windows with native Whisper
 token timestamps, retaining window bounds when the runtime provides no timing.
-sherpa uses Kitten/Kokoro for TTS, Whisper in at most
+sherpa uses Kitten/Kokoro/Piper/Supertonic for TTS and Pocket/ZipVoice for reference cloning, Whisper in at most
 20-second windows for offline ASR, and Zipformer with utterance endpoint resets
 for live dictation. Tap/hold capture releases on lifecycle stop and screen
 exit; normal Stop drains the recognizer for its final transcript. Generated
@@ -486,3 +486,12 @@ images from `electron/.../home/contributors` into the APK assets, nothing is fet
 `tests/test_mobile_contract.py` guards the list; `scripts/update_contributors.py` regenerates it). Dub opens with a dashed source card and the animated
 `DubGlyph`. The compact dock uses an accessible icon for each workspace, with 48 dp touch targets and native Tab selection semantics.
 
+
+Speech lists all seven phone speech engines independently of the selected voice.
+Pocket TTS and ZipVoice require a saved voice and show guidance until one is
+selected. Choosing a preset-only engine clears an incompatible reference;
+OmniVoice also offers neutral design without a saved reference. Voice Design
+shows only OmniVoice. The shared catalogue pins all component files, including
+ZipVoice's separate vocoder and bundled lexicon; every file is size/hash checked.
+Downloads and licence review remain explicit. See the shared contract for the
+conversion-specific licence restrictions.

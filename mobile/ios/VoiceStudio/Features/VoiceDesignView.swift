@@ -40,7 +40,7 @@ struct VoiceDesignView: View {
     @State private var work: Task<Void,Never>?
     @State private var shared: SharedFile?
     @State private var reporting: ContentReportSubject?
-    private var engineModel: PhoneModel? { model.phone.selectedModel("design",.clone) }
+    private var engineModel: PhoneModel? { let chosen = model.phone.selectedModel("design",.clone); return chosen?.supportsDesign == true ? chosen : model.phone.candidates(.clone).first(where: \.supportsDesign) }
     private var instruction: String { (categories.compactMap { traits[$0.id] }.filter { !$0.isEmpty }+[extraInstruction].filter { !$0.isEmpty }).joined(separator: ", ") }
     var body: some View {
         Page {
@@ -70,7 +70,7 @@ struct VoiceDesignView: View {
                     Button(model.t("clone.seed_reroll"),systemImage: "shuffle") { seed = Int.random(in: 0...Int(UInt32.max)) }.studioButton(.tertiary)
                 }
                 TextField(model.t("clone.script"),text: $script,axis: .vertical).lineLimit(4...8).accessibilityIdentifier("design.script")
-                ChoicePicker(label: model.t("mobile.speak.engine"),selection: Binding(get: { engineModel?.id ?? "" },set: { model.phone.chooseModel("design",$0) }),options: model.phone.candidates(.clone).map { SelectionOption(id: $0.id,title: $0.name,enabled: $0.fits()) })
+                ChoicePicker(label: model.t("mobile.speak.engine"),selection: Binding(get: { engineModel?.id ?? "" },set: { model.phone.chooseModel("design",$0) }),options: model.phone.candidates(.clone).filter(\.supportsDesign).map { SelectionOption(id: $0.id,title: $0.name,enabled: $0.fits()) })
             }.disabled(running)
             if let item = engineModel, !model.phone.ready(item) { LocalDownloadPrompt(items: [item],feature: "nav.design") }
             if running {

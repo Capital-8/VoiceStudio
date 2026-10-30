@@ -3844,7 +3844,8 @@
       "unstar": "Hapus bintang",
       "engine_unavailable": "Mesin ini tidak tersedia. Periksa instalasinya di komputer Anda.",
       "voice_default": "Suara default (preset mesin)",
-      "engine_no_cloning": "Mesin ini tidak dapat memakai audio referensi. Pilih mesin yang mendukung kloning suara, atau gunakan suara default."
+      "engine_no_cloning": "Mesin ini tidak dapat memakai audio referensi. Pilih mesin yang mendukung kloning suara, atau gunakan suara default.",
+      "reference_required": "Pilih suara tersimpan untuk menggunakan model ini. Anda dapat mengimpornya dari Galeri."
     },
     "voices": {
       "search": "Cari suara",

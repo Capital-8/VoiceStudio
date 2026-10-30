@@ -3840,7 +3840,8 @@
       "unstar": "取消加星",
       "engine_unavailable": "此引擎不可用。请在电脑上检查其安装情况。",
       "voice_default": "默认声音（引擎预设）",
-      "engine_no_cloning": "此引擎无法使用参考音频。请选择支持语音克隆的引擎，或使用默认声音。"
+      "engine_no_cloning": "此引擎无法使用参考音频。请选择支持语音克隆的引擎，或使用默认声音。",
+      "reference_required": "选择已保存的声音以使用此模型。您可以从声音库导入。"
     },
     "voices": {
       "search": "搜索声音",

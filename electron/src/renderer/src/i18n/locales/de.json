@@ -3844,7 +3844,8 @@
       "unstar": "Stern entfernen",
       "engine_unavailable": "Diese Engine ist nicht verfügbar. Prüfe ihre Installation auf deinem Computer.",
       "voice_default": "Standardstimme (Engine-Voreinstellung)",
-      "engine_no_cloning": "Diese Engine kann kein Referenzaudio verwenden. Wähle eine Engine mit Stimmklonen oder nutze die Standardstimme."
+      "engine_no_cloning": "Diese Engine kann kein Referenzaudio verwenden. Wähle eine Engine mit Stimmklonen oder nutze die Standardstimme.",
+      "reference_required": "Wähle eine gespeicherte Stimme für dieses Modell. Du kannst eine aus der Galerie importieren."
     },
     "voices": {
       "search": "Stimmen suchen",

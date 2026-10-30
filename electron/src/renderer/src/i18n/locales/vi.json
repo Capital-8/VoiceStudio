@@ -3844,7 +3844,8 @@
       "unstar": "Bỏ gắn sao",
       "engine_unavailable": "Engine này không khả dụng. Hãy kiểm tra cài đặt của nó trên máy tính.",
       "voice_default": "Giọng mặc định (cấu hình sẵn của engine)",
-      "engine_no_cloning": "Engine này không thể dùng âm thanh tham chiếu. Hãy chọn engine hỗ trợ nhân bản giọng nói, hoặc dùng giọng mặc định."
+      "engine_no_cloning": "Engine này không thể dùng âm thanh tham chiếu. Hãy chọn engine hỗ trợ nhân bản giọng nói, hoặc dùng giọng mặc định.",
+      "reference_required": "Chọn giọng đã lưu để dùng mô hình này. Bạn có thể nhập giọng từ thư viện."
     },
     "voices": {
       "search": "Tìm giọng nói",

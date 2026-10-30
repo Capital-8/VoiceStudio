@@ -240,11 +240,20 @@ jobs:
       - name: Fetch smallest models
         run: python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences
 
+      - name: Fetch additional Speech models
+        run: python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences --speech-models
+
       - name: Real TTS -> ASR
         env:
           # Native source metadata uses the same read-only API token as iOS builds.
           GITHUB_TOKEN: ${{ github.token }}
         run: mobile/ios/scripts/real-inference.sh
+
+      - name: Real Speech preset and reference models
+        run: |
+          export VOICESTUDIO_REAL_SPEECH=1
+          export SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
+          mobile/ios/scripts/check-swift.sh test --filter realSpeechModels --no-parallel
 
   android-inference:
     runs-on: ubuntu-24.04
@@ -290,7 +299,7 @@ jobs:
           ram-size: 4096M
           disk-size: 6G
           working-directory: mobile/android
-          script: ./gradlew --no-daemon connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.voicestudio.mobile.LocalInferenceTest#smallestModelsProduceSpeechAndRecognizeItOffline -Pandroid.testInstrumentationRunnerArguments.localInferenceSmoke=true -Pandroid.testInstrumentationRunnerArguments.downloadSmokeModels=true -Pandroid.testInstrumentationRunnerArguments.acceptModelLicencesForSmoke=true
+          script: ./gradlew --no-daemon connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=com.voicestudio.mobile.LocalInferenceTest#smallestModelsProduceSpeechAndRecognizeItOffline,com.voicestudio.mobile.LocalInferenceTest#speechPresetAndReferenceModelsProduceAudioOffline -Pandroid.testInstrumentationRunnerArguments.speechInferenceSmoke=true -Pandroid.testInstrumentationRunnerArguments.localInferenceSmoke=true -Pandroid.testInstrumentationRunnerArguments.downloadSmokeModels=true -Pandroid.testInstrumentationRunnerArguments.acceptModelLicencesForSmoke=true
 
   # Google Play phone screenshots from the real debug app (PlayScreenshotTour):
   # phone-first, smallest speech model, English. Nexus 5X is 1080x1920, inside
