@@ -3844,7 +3844,8 @@
       "unstar": "Yıldızı kaldır",
       "engine_unavailable": "Bu motor kullanılamıyor. Bilgisayarınızdaki kurulumunu kontrol edin.",
       "voice_default": "Varsayılan ses (motor ön ayarı)",
-      "engine_no_cloning": "Bu motor referans ses kullanamaz. Ses klonlamayı destekleyen bir motor seçin veya varsayılan sesi kullanın."
+      "engine_no_cloning": "Bu motor referans ses kullanamaz. Ses klonlamayı destekleyen bir motor seçin veya varsayılan sesi kullanın.",
+      "reference_required": "Bu modeli kullanmak için kayıtlı bir ses seçin. Galeriden bir ses içe aktarabilirsiniz."
     },
     "voices": {
       "search": "Seslerde ara",

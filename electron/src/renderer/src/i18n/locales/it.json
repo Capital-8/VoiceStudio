@@ -3846,7 +3846,8 @@
       "unstar": "Elimina stella",
       "engine_unavailable": "Questo motore non è disponibile. Controlla la sua installazione sul computer.",
       "voice_default": "Voce predefinita (preset del motore)",
-      "engine_no_cloning": "Questo motore non può usare audio di riferimento. Scegli un motore che supporti la clonazione vocale oppure usa la voce predefinita."
+      "engine_no_cloning": "Questo motore non può usare audio di riferimento. Scegli un motore che supporti la clonazione vocale oppure usa la voce predefinita.",
+      "reference_required": "Scegli una voce salvata per usare questo modello. Puoi importarne una dalla galleria."
     },
     "voices": {
       "search": "Cerca voci",

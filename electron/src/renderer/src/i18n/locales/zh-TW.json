@@ -3844,7 +3844,8 @@
       "unstar": "取消星星",
       "engine_unavailable": "此引擎無法使用。請在電腦上檢查其安裝情況。",
       "voice_default": "預設語音（引擎預設組）",
-      "engine_no_cloning": "此引擎無法使用參考音訊。請選擇支援聲音複製的引擎，或使用預設語音。"
+      "engine_no_cloning": "此引擎無法使用參考音訊。請選擇支援聲音複製的引擎，或使用預設語音。",
+      "reference_required": "選擇已儲存的聲音以使用此模型。您可以從聲音庫匯入。"
     },
     "voices": {
       "search": "搜尋語音",

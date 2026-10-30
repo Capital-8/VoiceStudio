@@ -54,7 +54,7 @@ class PhoneVoiceStore(private val root: File) {
     }}
     suspend fun create(name: String, source: File, consent: Boolean, asr: PhoneModel, cloneModel: PhoneModel, engine: LocalEngine,
         decoder: AudioDecoder = AndroidAudioDecoder(), progress: (Float)->Unit = {}): PhoneVoice = withContext(Dispatchers.IO) {
-        require(consent&&asr.capability=="asr"&&cloneModel.capability=="clone"&&name.trim().isNotEmpty()&&name.length<=200)
+        require(consent&&asr.capability=="asr"&&cloneModel.supportsCloning&&name.trim().isNotEmpty()&&name.length<=200)
         val id=UUID.randomUUID().toString()
         val dir=directory(id).apply {mkdirs()}
         try {

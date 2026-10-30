@@ -3844,7 +3844,8 @@
       "unstar": "Ta bort stjärna",
       "engine_unavailable": "Den här motorn är inte tillgänglig. Kontrollera installationen på datorn.",
       "voice_default": "Standardröst (motorns förinställning)",
-      "engine_no_cloning": "Den här motorn kan inte använda referensljud. Välj en motor som stöder röstkloning eller använd standardrösten."
+      "engine_no_cloning": "Den här motorn kan inte använda referensljud. Välj en motor som stöder röstkloning eller använd standardrösten.",
+      "reference_required": "Välj en sparad röst för att använda den här modellen. Du kan importera en från galleriet."
     },
     "voices": {
       "search": "Sök röster",

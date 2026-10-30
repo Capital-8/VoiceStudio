@@ -61,6 +61,7 @@ kotlin { jvmToolchain(21); compilerOptions { jvmTarget.set(org.jetbrains.kotlin.
 val bundleCatalogs by tasks.registering {
     val catalogs = repository.resolve("electron/src/renderer/src/i18n/locales")
     val contracts = repository.resolve("mobile/contract")
+    inputs.dir(contracts.resolve("tts"))
     inputs.dir(catalogs)
     inputs.file(repository.resolve("electron/public/signal-field.webp"))
     inputs.file(repository.resolve("electron/src/shared/languages.json"))
@@ -83,6 +84,7 @@ val bundleCatalogs by tasks.registering {
         catalogs.listFiles()!!.filter { it.extension == "json" }.forEach { it.copyTo(out.resolve(it.name), overwrite = true) }
         contracts.listFiles()!!.filter { it.name.startsWith("strings") && it.name.endsWith(".en.json") }.forEach { it.copyTo(assets.resolve(it.name), overwrite = true) }
         contracts.resolve("models.json").copyTo(assets.resolve("models.json"), overwrite = true)
+        contracts.resolve("tts").copyRecursively(assets.resolve("tts"), overwrite=true)
         contracts.resolve("design.json").copyTo(assets.resolve("design.json"), overwrite = true)
         contracts.resolve("community-gallery.json").copyTo(assets.resolve("community-gallery.json"), overwrite = true)
         contracts.resolve("maintainer-cards.json").copyTo(assets.resolve("maintainer-cards.json"), overwrite = true)

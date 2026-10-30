@@ -3846,7 +3846,8 @@
       "unstar": "Supprimer la star",
       "engine_unavailable": "Ce moteur n'est pas disponible. Vérifiez son installation sur votre ordinateur.",
       "voice_default": "Voix par défaut (préréglage du moteur)",
-      "engine_no_cloning": "Ce moteur ne peut pas utiliser d'audio de référence. Choisissez un moteur qui prend en charge le clonage vocal, ou utilisez la voix par défaut."
+      "engine_no_cloning": "Ce moteur ne peut pas utiliser d'audio de référence. Choisissez un moteur qui prend en charge le clonage vocal, ou utilisez la voix par défaut.",
+      "reference_required": "Choisissez une voix enregistrée pour utiliser ce modèle. Vous pouvez en importer une depuis la galerie."
     },
     "voices": {
       "search": "Rechercher des voix",

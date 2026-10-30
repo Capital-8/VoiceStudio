@@ -3870,7 +3870,8 @@
       "unstar": "Usuń gwiazdkę",
       "engine_unavailable": "Ten silnik jest niedostępny. Sprawdź jego instalację na komputerze.",
       "voice_default": "Głos domyślny (ustawienie silnika)",
-      "engine_no_cloning": "Ten silnik nie może używać nagrania referencyjnego. Wybierz silnik obsługujący klonowanie głosu lub użyj głosu domyślnego."
+      "engine_no_cloning": "Ten silnik nie może używać nagrania referencyjnego. Wybierz silnik obsługujący klonowanie głosu lub użyj głosu domyślnego.",
+      "reference_required": "Wybierz zapisany głos, aby użyć tego modelu. Możesz zaimportować go z galerii."
     },
     "voices": {
       "search": "Szukaj głosów",

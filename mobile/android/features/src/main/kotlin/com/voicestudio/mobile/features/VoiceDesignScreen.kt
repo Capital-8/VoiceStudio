@@ -40,7 +40,7 @@ private data class DesignedTake(val audio: LocalAudio,val text: String,val instr
     var work by remember {mutableStateOf<Job?>(null)}
     var progress by remember {mutableStateOf(0f)}
     val running=work?.isActive==true
-    val item=phone.models.filter {it.capability=="clone"}.let {models -> models.firstOrNull {it.id==prefs.phoneModels["design"]} ?: models.firstOrNull {it.id in phone.installed} ?: models.firstOrNull()}
+    val item=phone.models.filter {it.supportsDesign}.let {models -> models.firstOrNull {it.id==prefs.phoneModels["design"]} ?: models.firstOrNull {it.id in phone.installed} ?: models.firstOrNull()}
     LaunchedEffect(Unit) {
         try {
             vm.phone.refresh()
@@ -74,7 +74,7 @@ private data class DesignedTake(val audio: LocalAudio,val text: String,val instr
             }
             Field("clone.seed_label",seed.toString(),{value->value.toLongOrNull()?.takeIf {it>=0}?.let {seed=it}})
             Secondary("clone.seed_reroll") {seed=kotlin.random.Random.nextLong(0,0x1_0000_0000L)}
-            TaskModelPicker(vm,"design",setOf("clone"),item,key="design")
+            ChoicePicker("mobile.local.model",item?.id.orEmpty(),phone.models.filter {it.supportsDesign}.map {Choice(it.id,it.name,enabled=it.fits(vm.phone.ramBytes))}) {id->vm.preference {it.copy(phoneModels=it.phoneModels+("design" to id))}}
         }
         Field("clone.script",script,{if(!running) script=it},multiline=true)
         if(item!=null&&!phone.canRun(item,vm.phone.ramBytes)) MissingModelsCard(vm,"nav.design",listOf(item))

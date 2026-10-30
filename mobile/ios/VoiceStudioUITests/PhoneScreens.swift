@@ -1,6 +1,21 @@
 import XCTest
 
 final class PhoneScreens: XCTestCase {
+    @MainActor func testSpeechOffersAllEnginesAndExplainsReferenceOnlyModels() {
+        let app = XCUIApplication(); app.launchArguments = ["--ui-smoke", "-AppleLanguages", "(en)"]
+        app.launch(); app.declineConsent()
+        let speech = app.buttons["home.speak"]; app.reveal(speech); speech.tap()
+        let picker = app.buttons["Models"]; app.reveal(picker); picker.tap()
+        for name in ["Kitten", "Kokoro", "OmniVoice", "Piper", "Supertonic 3", "Pocket TTS", "ZipVoice"] {
+            let option = app.buttons.matching(NSPredicate(format: "label == %@", name)).firstMatch
+            app.reveal(option); XCTAssertTrue(option.exists)
+        }
+        let pocket = app.buttons["choice.option.pocket-tts-int8-en"]; app.reveal(pocket); pocket.tap()
+        XCTAssertTrue(app.staticTexts["Choose a saved voice to use this model. You can import one from Gallery."].exists)
+        XCTAssertEqual(app.buttons["Voice"].value as? String, "Choose a voice")
+        XCTAssertTrue(app.buttons["models.get"].exists)
+        XCTAssertFalse(app.buttons["speak.generate"].exists)
+    }
     @MainActor func testGalleryBrowsesPresetsBeforeDownloadAndSearchesVoiceNames() {
         let app = XCUIApplication(); app.launchArguments = ["--ui-smoke", "-AppleLanguages", "(en)"]
         app.launch(); app.declineConsent()

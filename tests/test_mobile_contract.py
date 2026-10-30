@@ -154,7 +154,7 @@ def test_mobile_models_are_pinned_and_have_complete_manifests():
     assert len(ids) == len(set(ids))
     assert {model["capability"] for model in catalogue["models"]} == set(mobile_models.CAPABILITIES)
     for model in catalogue["models"]:
-        assert model["runtime"] == mobile_models.CAPABILITIES[model["capability"]]
+        assert model["runtime"] in mobile_models.RUNTIMES[model["capability"]]
         assert mobile_models.REVISION.fullmatch(model["revision"])
         assert model["total_bytes"] == sum(file["size"] for file in model["files"])
         for file in model["files"]:
@@ -463,3 +463,13 @@ def test_mobile_voice_design_traits_match_electron():
                 for part in key.split("."):
                     value = value[part]
                 assert isinstance(value, str) and value
+
+
+def test_speech_catalogue_offers_native_model_families_with_honest_reference_requirements():
+    models=json.loads((CONTRACT / "models.json").read_text())["models"]
+    families={m["config"].get("model_type"):m for m in models if m["capability"] in {"tts","clone"}}
+    assert {"kitten","kokoro","vits","supertonic","pocket","zipvoice"} <= families.keys()
+    for family in ("pocket","zipvoice"):
+        assert families[family]["config"]["reference_required"] is True
+        assert families[family]["config"]["supports_cloning"] is True
+        assert families[family]["config"]["num_speakers"] == 0

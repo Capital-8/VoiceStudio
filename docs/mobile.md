@@ -196,7 +196,8 @@ an unapproved voice or open a file/URL. Keep VoiceStudio active on this screen.
 ## On-device models
 
 Open **Models** and download what you need. Nothing downloads until you tap
-it; files come from Hugging Face and are checked before use. Wi-Fi only unless
+it; model files come from pinned Hugging Face revisions or an explicitly listed
+GitHub release component and are checked before use. Wi-Fi only unless
 you allow mobile data.
 
 Concurrent downloads reserve their combined remaining disk space. If they will
@@ -206,15 +207,28 @@ even if you edit the next script while synthesis is running.
 
 | Model | For | Size | Phone memory |
 |---|---|---|---|
-| Kitten (English) / Kokoro (multi-language) | Speak | ~170 MB each | 2–3 GB |
+| Kitten (English) / Kokoro (multi-language) | Speech | ~170 MB each | 2–3 GB |
+| Piper Lessac (English) | Speech, one preset voice | 64 MB | 2 GB |
+| Supertonic 3 (31 languages) | Speech, ten preset voices | 145 MB | 3 GB |
+| Pocket TTS (English) | Speech with a saved voice | 198 MB | 3 GB |
+| ZipVoice (English / Chinese) | Speech with a saved voice and transcript | 187 MB | 3 GB |
 | Whisper tiny / base | Transcription, dubbing | 100–160 MB | 2–3 GB |
 | Zipformer | Live dictation (English) | 44 MB | 2 GB |
-| OmniVoice | Voice cloning, dubbing | 660 MB | 6 GB |
+| OmniVoice | Speech, voice cloning, voice design, dubbing | 660 MB | 6 GB |
 | Qwen3 1.7B | Dub translation | 1.1 GB | 6 GB |
 
 Some models ask you to accept their licence first (for example OmniVoice is
 for non-commercial use), the same as on the desktop. Models your phone can't
 run are shown greyed out with the reason.
+
+Speech's model picker shows all seven speech engines before installation. Pocket
+TTS and ZipVoice need a saved voice; import one from Gallery or create one in
+Voices. Their Generate action stays unavailable until a reference is selected.
+OmniVoice can also generate with a neutral designed voice. Choosing a preset-only
+engine clears an incompatible saved voice. Selecting a model starts no download.
+Pocket's conversion has conflicting licence statements and is treated as
+non-commercial; Piper's training-data rights remain unresolved. Review the exact
+terms shown before accepting any new pack.
 
 ## Pair a computer (optional)
 
