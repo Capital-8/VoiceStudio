@@ -118,10 +118,10 @@ class HostSwitchRegressionTest {
     }
     @Test fun switchingCloneToPhoneCancelsTheComputerCompletion()=runBlocking<Unit> {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
-        val original=a.dispatcher;val started=java.util.concurrent.CountDownLatch(1)
+        val original=a.dispatcher;val started=java.util.concurrent.CountDownLatch(1);val release=java.util.concurrent.CountDownLatch(1)
         a.dispatcher=object:Dispatcher() {
             override fun dispatch(request:RecordedRequest):MockResponse = if(request.path=="/profiles"&&request.method=="POST") {
-                started.countDown();MockResponse().setBodyDelay(1,TimeUnit.SECONDS).setBody("""{"id":"stale-clone","name":"Stale clone"}""")
+                started.countDown();release.await(10,TimeUnit.SECONDS);MockResponse().setBody("""{"id":"stale-clone","name":"Stale clone"}""")
             } else original.dispatch(request)
         }
         val sample=java.io.File.createTempFile("location-clone-",".wav",vm.getApplication<Application>().cacheDir).apply {writeText("RIFF fixture")}
@@ -131,11 +131,10 @@ class HostSwitchRegressionTest {
             compose.onNodeWithTag("home.voices").performScrollTo().performClick()
             vm.clone("Stale clone",sample,hasConsent={true}) {completed++}
             withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
-            compose.onNodeWithText("This phone").performClick();awaitIdle()
-            delay(1100);shadowOf(Looper.getMainLooper()).idle()
+            compose.onNodeWithText("This phone").performClick();release.countDown();awaitIdle()
             assertEquals(0,completed);assertFalse(vm.state.value.canRetry)
             compose.onNodeWithText("Voice name").assertExists()
-        } finally {sample.delete()}
+        } finally {release.countDown();sample.delete()}
     }
     @Test fun failedCloneKeepsItsSampleAndOnlySuccessfulRetryCompletesCreation()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
