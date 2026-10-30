@@ -25,6 +25,7 @@ struct CommunityGalleryView: View {
         }
     }
     var body: some View {
+        VStack(alignment: .leading,spacing: VSTokens.spacingGap) {
         Text(model.t("gallery.community_explainer")).font(.subheadline).foregroundStyle(theme.color("textMuted"))
         if let catalogue {
             ChoicePicker(label: model.t("gallery.community_packs"),selection: $pack,options: [SelectionOption(id: "",title: model.t("gallery.community_all_packs"))]+catalogue.packs.map { SelectionOption(id: $0.id,title: $0.name) })
@@ -41,7 +42,7 @@ struct CommunityGalleryView: View {
                 if item.type == "preset" {
                     Text(model.t("gallery.no_preview")).font(.caption).foregroundStyle(theme.color("textMuted"))
                     NavigationLink { VoiceDesignView(communityRecipe: item) } label: { Label(model.t("gallery.use_voice"),systemImage: "waveform") }
-                        .accessibilityIdentifier("gallery.community.use.\(item.id)").frame(minHeight: 44)
+                        .studioButton(.primary).accessibilityIdentifier("gallery.community.use.\(item.id)")
                 } else {
                     Button(model.t("common.play"),systemImage: "play.fill") { play(item) }.studioButton(.tertiary).disabled(active != nil)
                         .accessibilityIdentifier("gallery.community.play.\(item.id)")
@@ -54,8 +55,9 @@ struct CommunityGalleryView: View {
         if let imported { NavigationLink(imported.name) { SpeakView(initialPhoneVoiceID: imported.id.uuidString) } }
         Link("debpalash/omnivoice-gallery",destination: URL(string: "https://github.com/debpalash/omnivoice-gallery")!).font(.caption)
         Button(model.t("common.refresh"),systemImage: "arrow.clockwise") { Task { await refresh() } }.studioButton(.tertiary).disabled(loading)
-        // Attach lifecycle once; this view is hosted inside Gallery's scrolling Page.
-        Color.clear.frame(height: 0).task {
+        }
+        // Own work on the stable gallery container, not a footer that can leave the viewport.
+        .task {
             do {
                 let root = try FileManager.default.url(for: .cachesDirectory,in: .userDomainMask,appropriateFor: nil,create: true).appendingPathComponent("CommunityGallery")
                 let service = try CommunityGallery(root: root); client = service

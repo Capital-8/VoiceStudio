@@ -37,8 +37,9 @@ final class PhoneScreens: XCTestCase {
         app.buttons["keyboard.done"].tap()
         let recipe = app.buttons["gallery.community.use.feat_00_the_librarian"]
         app.reveal(recipe); recipe.tap()
-        XCTAssertTrue(app.textFields["design.script"].waitForExistence(timeout: 5))
-        XCTAssertEqual(app.textFields["design.script"].value as? String,"The valley had been quiet for a hundred years, and tonight, for the first time, something stirred beneath the old stone bridge.")
+        let script = app.descendants(matching: .any).matching(identifier: "design.script").firstMatch
+        XCTAssertTrue(script.waitForExistence(timeout: 5))
+        XCTAssertEqual(script.value as? String,"The valley had been quiet for a hundred years, and tonight, for the first time, something stirred beneath the old stone bridge.")
         XCTAssertEqual(app.buttons["Gender"].value as? String,"female")
     }
     @MainActor func testNavigationKeepsAllDestinationsReachableAfterScrolling() {
