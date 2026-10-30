@@ -25,6 +25,7 @@ import java.io.File
     var failed by remember {mutableStateOf(false)}
     var active by remember {mutableStateOf<String?>(null)}
     var work by remember {mutableStateOf<Job?>(null)}
+    var playRequest by remember {mutableLongStateOf(0)}
     var audio by remember {mutableStateOf<Pair<String,File>?>(null)}
     var target by remember {mutableStateOf<GalleryEntry?>(null)}
     suspend fun refresh() {
@@ -60,10 +61,10 @@ import java.io.File
                 Text(tr("gallery.no_preview"),color=role("textMuted"),style=MaterialTheme.typography.bodySmall)
                 TextButton(modifier=Modifier.testTag("gallery.community.use.${item.id}"),onClick={navigate("community-design/"+android.net.Uri.encode(Json.encodeToString(item)))}) {Text(tr("gallery.use_voice"))}
             } else {
-                Secondary("common.play",active==null) {active=item.id;work=scope.launch {try {audio=item.id to client.recording(item)} catch(e:CancellationException) {throw e} catch(e:Exception) {vm.fail(e)} finally {active=null;work=null}}}
+                Secondary("common.play",active==null) {active=item.id;work=scope.launch {try {audio=item.id to client.recording(item);playRequest++} catch(e:CancellationException) {throw e} catch(e:Exception) {vm.fail(e)} finally {active=null;work=null}}}
                 Secondary("gallery.use_voice",active==null) {target=item}
             }
-            audio?.takeIf {it.first==item.id}?.let {LocalAudioPlayer(it.second,autoPlay=true,failure=vm::fail)}
+            audio?.takeIf {it.first==item.id}?.let {LocalAudioPlayer(it.second,autoPlay=true,playRequest=playRequest,failure=vm::fail)}
             if(active==item.id) {InlineLoading();Secondary("common.cancel") {work?.cancel()}}
         }}
     }

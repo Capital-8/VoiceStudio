@@ -94,7 +94,7 @@ internal fun chooseSpeakModel(models: List<PhoneModel>,installed: Set<String>,ch
 
 @Composable fun SpeakScreen(vm: StudioViewModel, initialPhoneVoiceID: String? = null, initialComputerVoiceID: String? = null, initialPhonePreset: Int? = null, initialPhoneModelID: String? = null, initialText: String? = null) {
     var text by rememberSaveable(initialText) {mutableStateOf(initialText.orEmpty())}
-    com.voicestudio.mobile.features.models.TaskLocation(vm,"speak",setOf("tts","clone")) {location,model ->
+    com.voicestudio.mobile.features.models.TaskLocation(vm,"speak",setOf("tts","clone"),initialLocation=when {initialComputerVoiceID!=null->"computer";initialPhoneVoiceID!=null||initialPhonePreset!=null->"phone";else->null}) {location,model ->
         if(location==com.voicestudio.mobile.local.RunLocation.COMPUTER) ComputerSpeakScreen(vm,text,{text=it},initialComputerVoiceID)
         else {
             val phone by vm.phone.state.collectAsState()
