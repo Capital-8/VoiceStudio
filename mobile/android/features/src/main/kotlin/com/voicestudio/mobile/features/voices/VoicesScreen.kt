@@ -53,9 +53,9 @@ import java.io.File
     val recorder=remember {SampleRecorder(context)}
     LaunchedEffect(Unit) {sample?.let {if(!File(it).exists()) sample=null}}
     DisposableEffect(lifecycle) {
-        val observer=LifecycleEventObserver {_,event -> if(event==Lifecycle.Event.ON_STOP) {vm.phone.cancelInference();if(recording) {recorder.discard();recording=false;sample=null}}}
+        val observer=LifecycleEventObserver {_,event -> if(event==Lifecycle.Event.ON_STOP) {vm.phone.cancelInference();if(cloning) vm.cancelClone();if(recording) {recorder.discard();recording=false;sample=null}}}
         lifecycle.lifecycle.addObserver(observer)
-        onDispose {lifecycle.lifecycle.removeObserver(observer);if(recording) recorder.discard();sample?.let {File(it).delete()};sample=null;vm.phone.cancelInference()}
+        onDispose {lifecycle.lifecycle.removeObserver(observer);if(cloning) vm.cancelClone();cloning=false;if(recording) recorder.discard();sample?.let {File(it).delete()};sample=null;vm.phone.cancelInference()}
     }
     LaunchedEffect(recording) {seconds=0;while(recording) {
         delay(1000);seconds++
@@ -94,10 +94,10 @@ import java.io.File
         } else Secondary("mobile.voices.record",onClick=record)
         if(sample!=null&&!recording) Text(tr("mobile.android.sample_ready"))
         Action("mobile.voices.new_clone",permission&&sample!=null&&name.isNotBlank()&&!state.busy&&!recording&&phone.progress==null&&(location==RunLocation.COMPUTER||cloneReady)) {
-            if(location==RunLocation.COMPUTER) vm.clone(name,File(sample!!)) {sample=null;name="";permission=false;cloning=false;onCreated()}
+            if(location==RunLocation.COMPUTER) vm.clone(name,File(sample!!)) {if(cloning) {sample=null;name="";permission=false;cloning=false;onCreated()}}
             else vm.phone.clone(name,File(sample!!),asr!!,model!!,permission) {sample=null;name="";permission=false;cloning=false;onCreated()}
         }
-        Secondary("common.cancel",!recording) {vm.phone.cancelInference();cloning=false;sample?.let {File(it).delete()};sample=null;onCancel()}
+        Secondary("common.cancel",!recording) {vm.phone.cancelInference();vm.cancelClone();cloning=false;sample?.let {File(it).delete()};sample=null;onCancel()}
         }
         if(!cloning) {
         if(profiles.isEmpty()&&!state.catalogLoading) {

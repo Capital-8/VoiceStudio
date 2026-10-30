@@ -66,6 +66,30 @@ class HostSwitchRegressionTest {
         vm=StudioViewModel(app,store);awaitIdle()
     }
     @After fun teardown() {vm.viewModelScope.cancel(); a.shutdown(); b.shutdown()}
+    @Test fun cancelledComputerCloneCannotCompleteOrNavigateLater()=runBlocking {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        val original=a.dispatcher
+        val started=java.util.concurrent.CountDownLatch(1)
+        a.dispatcher=object:Dispatcher() {
+            override fun dispatch(request:RecordedRequest):MockResponse =
+                if(request.path=="/profiles"&&request.method=="POST") {
+                    started.countDown()
+                    MockResponse().setBodyDelay(500,TimeUnit.MILLISECONDS).setBody("""{"id":"cancelled-voice","name":"Cancelled clone"}""")
+                } else original.dispatch(request)
+        }
+        val sample=java.io.File.createTempFile("cancel-clone-",".wav",vm.getApplication<Application>().cacheDir)
+        sample.writeText("RIFF test fixture")
+        var completed=0
+        try {
+            vm.clone("Cancelled clone",sample) {completed++}
+            withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
+            vm.cancelClone();awaitIdle()
+            assertEquals(0,completed)
+            assertTrue(sample.exists())
+            assertTrue(vm.state.value.profiles.none {it.id=="cancelled-voice"})
+            assertFalse(vm.state.value.canRetry)
+        } finally {sample.delete()}
+    }
     @Test fun failedCloneKeepsItsSampleAndOnlySuccessfulRetryCompletesCreation()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
         val original=a.dispatcher
