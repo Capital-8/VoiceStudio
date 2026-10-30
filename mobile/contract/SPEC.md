@@ -427,19 +427,24 @@ Workflows on both platforms. These are native screens; no embedded desktop UI.
   gain, actual peak normalization with a −50 dBFS silence guard, and a noise gate.
   It preserves source media and synthetic provenance, supports WAV/M4A/MP3,
   and never loads a model or marks natural-only DSP as synthetic.
-- **Gallery** browses all bundled phone preset choices before any models are
-  installed, searches both model and localized voice names, and opens Speak with
-  the selected model/speaker. Download/consent and RAM requirements remain visible;
-  browsing never starts downloads or inference. My computer explains pairing when
-  unpaired and loads the paginated community catalogue
-  through the paired client, displays author/licence/language, previews only on
-  Play and materializes a host profile only on Use voice. Host changes discard
-  gallery results, preview and selected profiles. Copy to phone requires a separate
-  explicit voice-permission action and requests the host's bounded stored voice
-  bundle. A valid transcript and reference up to 30 seconds are installed under
-  a fresh phone identity; author/licence attribution remains visible and travels
-  with project archives. No model download/inference or direct external networking
-  is introduced.
+- **Gallery** opens the public `debpalash/omnivoice-gallery` community catalogue
+  directly on either phone, without pairing or installed models. Both builds bundle
+  the same `community-gallery.json` snapshot (upstream manifest, 2026-10-26, retaining
+  per-item author/licence); refresh it from the repository when updating the seed.
+  Opening Gallery may refresh the jsDelivr manifest, never app startup. A validated
+  disk cache or bundled seed stays available offline. Search, pack and language
+  filters show named designed recipes and recorded voices with attribution.
+  Use voice opens a recipe in native Voice Design with its actual instruction,
+  script and name; generation still requires explicit model download/licence consent.
+  Recordings download only on Play or an explicitly confirmed import. HTTPS hosts
+  and redirects are allowlisted, manifests bounded to 4 MiB and recordings to 32 MiB;
+  SHA-256 is verified before caching, playback or import. Import requires voice
+  permission, a nonempty transcript and reference up to 30 seconds. It preserves
+  author/licence attribution and synthetic provenance without inference or ASR.
+  This phone retains bundled engine presets with model/speaker selection in Speak.
+  My computer retains paired community browsing and stored voice-bundle copying;
+  switching hosts discards those host results. All generation stays on the chosen
+  device and all gallery downloads are initiated by entering Gallery or its controls.
 - **Workflows** retain ordered legacy recipes and support typed acyclic graphs
   with yes/no contains/equals/starts/ends conditions and compatible branch joins.
   Transcription, translation, speech, ASR/re-synthesis conversion and normalization

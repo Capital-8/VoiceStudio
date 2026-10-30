@@ -144,7 +144,9 @@ val LocalHostPlayerFactory=staticCompositionLocalOf<(Context,VoiceStudioApi)->Pl
 val LocalAudioPlayerFactory=staticCompositionLocalOf<(Context)->Player> {
     { context -> ExoPlayer.Builder(context).build() }
 }
-@Composable fun LocalAudioPlayer(file: File, failure: (Throwable)->Unit) {
+@Composable fun LocalAudioPlayer(file: File, failure: (Throwable)->Unit) { LocalAudioPlayer(file,false,failure) }
+
+@Composable fun LocalAudioPlayer(file: File, autoPlay:Boolean, failure: (Throwable)->Unit) {
     val context=LocalContext.current
     val factory=LocalAudioPlayerFactory.current
     val player=remember(file) {factory(context)}
@@ -158,7 +160,7 @@ val LocalAudioPlayerFactory=staticCompositionLocalOf<(Context)->Player> {
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {failure(ClientFailure("mobile.android.playback_failed"))}
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {if(videoSize.width>0&&videoSize.height>0) videoRatio=videoSize.width*videoSize.pixelWidthHeightRatio/videoSize.height}
         }
-        player.addListener(listener);player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)));player.prepare()
+        player.addListener(listener);player.setMediaItem(MediaItem.fromUri(Uri.fromFile(file)));player.prepare();player.playWhenReady=autoPlay
         onDispose {player.removeListener(listener);player.release()}
     }
     LaunchedEffect(player) {while(isActive) {position=player.currentPosition.coerceAtLeast(0);duration=player.duration.coerceAtLeast(0);delay(250)}}

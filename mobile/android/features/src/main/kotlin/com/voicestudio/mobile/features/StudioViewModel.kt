@@ -155,13 +155,15 @@ class StudioViewModel @JvmOverloads constructor(application: Application, val st
     }
     fun star(item: HistoryItem) = run { api?.star(item.id, !item.isStarred); reload() }
     fun deleteHistory(item: HistoryItem) = run { api?.deleteHistory(item.id); reload() }
-    fun clone(name: String, file: File, created: ()->Unit = {}) {
+    fun clone(name: String, file: File, hasConsent: ()->Boolean, created: ()->Unit = {}) {
         if(mutable.value.busy) return
         clonePending=true
         run {
             val job=currentCoroutineContext()[Job]
             cloneOperation=job
             try {
+                // Retry re-enters this block: never reuse a withdrawn UI consent.
+                if(!hasConsent()) {clonePending=false;return@run}
                 val current=api ?: throw ClientFailure("mobile.android.disconnected_offline")
                 val profile=current.clone(name,file)
                 currentCoroutineContext().ensureActive()

@@ -86,7 +86,7 @@ import java.io.File
         }
         Field("mobile.voices.name_label",name,{name=it.take(200)})
         Info("mobile.voices.consent_title","mobile.voices.consent_body")
-        ConsentCheck("mobile.simple.voice_consent",permission,{permission=it})
+        ConsentCheck("mobile.simple.voice_consent",permission,{permission=it;if(!it&&vm.state.value.canRetry) vm.cancelClone()})
         Secondary("mobile.voices.pick_file",!recording) {pick.launch(arrayOf("audio/*"))}
         if(recording) {
             Text(tr("mobile.voices.recording",mapOf("seconds" to seconds)))
@@ -94,7 +94,7 @@ import java.io.File
         } else Secondary("mobile.voices.record",onClick=record)
         if(sample!=null&&!recording) Text(tr("mobile.android.sample_ready"))
         Action("mobile.voices.new_clone",permission&&sample!=null&&name.isNotBlank()&&!state.busy&&!recording&&phone.progress==null&&(location==RunLocation.COMPUTER||cloneReady)) {
-            if(location==RunLocation.COMPUTER) vm.clone(name,File(sample!!)) {if(cloning) {sample=null;name="";permission=false;cloning=false;onCreated()}}
+            if(location==RunLocation.COMPUTER) vm.clone(name,File(sample!!),hasConsent={permission&&cloning}) {if(cloning) {sample=null;name="";permission=false;cloning=false;onCreated()}}
             else vm.phone.clone(name,File(sample!!),asr!!,model!!,permission) {sample=null;name="";permission=false;cloning=false;onCreated()}
         }
         Secondary("common.cancel",!recording) {vm.phone.cancelInference();vm.cancelClone();cloning=false;sample?.let {File(it).delete()};sample=null;onCancel()}
