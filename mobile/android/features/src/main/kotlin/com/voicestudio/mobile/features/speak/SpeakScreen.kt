@@ -138,7 +138,9 @@ internal fun chooseSpeakModel(models: List<PhoneModel>,installed: Set<String>,ch
             LaunchedEffect(selected?.id,voice?.id) {language=if(voice!=null) "auto" else language.takeIf {it in selected?.languages.orEmpty()} ?: selected?.languages?.firstOrNull().orEmpty()}
             val languageChoices=if(voice!=null) listOf(Choice("auto",tr("languagePicker.auto"))) else selected?.languages.orEmpty().map {Choice(it,languageName(it,LocalL10n.current.locale))}
             Screen(bottomBar={
-                Action("mobile.speak.generate",text.isNotBlank()&&selected!=null&&phone.canRun(selected,vm.phone.ramBytes)&&validSpeaker&&phone.progress==null&&!exporting) {
+                if(selected!=null&&!phone.canRun(selected,vm.phone.ramBytes)) {
+                    com.voicestudio.mobile.features.models.MissingModelsCard(vm,"mobile.tabs.speak",listOf(selected),prominent=true)
+                } else Action("mobile.speak.generate",text.isNotBlank()&&selected!=null&&phone.canRun(selected,vm.phone.ramBytes)&&validSpeaker&&phone.progress==null&&!exporting) {
                     vm.phone.speak(selected!!,text,speaker.toIntOrNull() ?: 0,voice,language.takeUnless {it=="auto"})
                 }
             }) {
@@ -151,7 +153,6 @@ internal fun chooseSpeakModel(models: List<PhoneModel>,installed: Set<String>,ch
                     HorizontalDivider(color=role("border"))
                     ChoicePicker("mobile.speak.language",language,languageChoices) {language=it}
                 }
-                if(selected?.let {!phone.canRun(it,vm.phone.ramBytes)}!=false) selected?.let {com.voicestudio.mobile.features.models.MissingModelsCard(vm,"mobile.tabs.speak",listOf(it))}
                 phone.progress?.let {p ->
                     LinearProgressIndicator(progress={p},modifier=Modifier.fillMaxWidth())
                     Secondary("common.cancel") {vm.phone.cancelInference()}

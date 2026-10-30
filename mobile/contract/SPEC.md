@@ -82,7 +82,13 @@ no accounts. M1 (below) is the computer connection; M2 is on-device inference.
 ## Screens (M1)
 
 Bottom navigation: **Home**, **Voices**, **Dub**, **Dictate**, **Settings**.
-Home is the default after consent. The compact hero places the wordmark and feature
+Home is the default after consent. All five navigation destinations keep visible
+text labels; iOS keeps the full tab bar visible while scrolling. The Home voice
+cloning shortcut opens creation directly, while the Voices tab opens the library.
+Before a speech model is ready, Speak pins its explicit Download action in place
+of a disabled Generate button. Downloading still requires each model’s exact
+licence consent. Dictate explains the model download and its size before it
+invites recording. The compact hero places the wordmark and feature
 summary beside the labeled contributor column; accessibility text sizes can stack them.
 Both apps show larger core-maintainer portraits
 above a two-row horizontal scroller of remaining contributors; tapping a core maintainer opens a scrollable
