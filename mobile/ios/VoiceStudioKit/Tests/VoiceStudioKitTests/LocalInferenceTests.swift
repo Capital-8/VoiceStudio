@@ -697,6 +697,11 @@ func realSpeechModelsProduceMarkedAudioOffline(id: String) async throws {
         try reference.markSynthetic().write(to: referenceURL)
         let pcm = try await AVPhoneAudioDecoder().decode(source: referenceURL,output: decoded.appendingPathComponent("reference.pcm"),maxSeconds: 30,progress: { _ in })
         audio = try await engine.clone(model: model,text: phrase,reference: pcm.read(start: 0,count: pcm.frames),referenceText: referenceText)
+        if id == "zipvoice-distill-int8-zh-en" {
+            let chinese = try await engine.clone(model: model,text: "\u{4f60}\u{597d}\u{ff0c}\u{8fd9}\u{662f}\u{672c}\u{5730}\u{8bed}\u{97f3}\u{6d4b}\u{8bd5}\u{3002}",reference: pcm.read(start: 0,count: pcm.frames),referenceText: referenceText)
+            #expect(chinese.samples.count > chinese.sampleRate)
+            #expect(chinese.samples.contains { abs($0) > 0.01 })
+        }
     } else { audio = try await engine.synthesize(model: model.selectingLanguage("en"),text: phrase) }
     #expect(audio.sampleRate == Int(model.config["sample_rate"]?.number ?? 24000))
     #expect(audio.samples.count > audio.sampleRate / 2)

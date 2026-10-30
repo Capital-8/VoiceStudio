@@ -33,6 +33,10 @@ class LocalPolicyTest {
     private suspend fun failure(key: String, block: suspend ()->Unit) {
         try {block();fail("Expected $key")} catch(e:ClientFailure) {assertEquals(key,e.key)}
     }
+    @Test fun nativeSpeechConfigCannotEscapeItsInstalledFrontendDirectory() {
+        val m=model().let {it.copy(files=it.files.map {f->f.copy(role="espeak-data")},config=JsonObject(mapOf("model_type" to JsonPrimitive("vits"),"data_dir" to JsonPrimitive("../outside"))))}
+        try {speechDataDirectory(m,temporary.root);fail("Escaping frontend accepted")} catch(e:ClientFailure) {assertEquals("mobile.local.model_incompatible",e.key)}
+    }
     @Test fun bundledSpeechFrontendInstallsOfflineAndRejectsCorruption() = runTest {
         val m=model().let {it.copy(files=it.files.map {f->f.copy(bundled="tts/frontend.txt")})}
         var corrupt=true

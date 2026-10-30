@@ -43,9 +43,15 @@ internal object NativeBridge {
     external fun translateText(model: String, prompt: String, formatted: Boolean, control: NativeControl): ByteArray?
 }
 
+internal fun speechDataDirectory(model:PhoneModel,dir:File):String {
+    if(model.files.none {it.role=="espeak-data"}) return ""
+    val path=File(dir,model.option("data_dir","espeak-ng-data")).canonicalFile
+    if(!path.path.startsWith(dir.canonicalPath+File.separator)) throw ClientFailure("mobile.local.model_incompatible")
+    return path.path
+}
 /** Family-specific native configuration shared by real inference and contract tests. */
 internal fun speechTtsConfig(model:PhoneModel,dir:File,language:String?):OfflineTtsConfig {
-    val data=if(model.files.any {it.role=="espeak-data"}) File(dir,model.option("data_dir","espeak-ng-data")).absolutePath else ""
+    val data=speechDataDirectory(model,dir)
     val config=OfflineTtsModelConfig(numThreads=2,provider="cpu")
     fun role(name:String)=model.role(dir,name)
     val lexicon=model.files.filter {it.role=="lexicon"}.joinToString(",") {File(dir,it.path).absolutePath}
