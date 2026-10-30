@@ -70,7 +70,7 @@ struct CommunityGalleryView: View {
         .navigationDestination(isPresented: Binding(get: { imported != nil },set: { if !$0 { imported = nil } })) {
             if let imported { SpeakView(initialPhoneVoiceID: imported.id.uuidString) }
         }
-        .confirmationDialog(model.t("mobile.voices.consent_title"),isPresented: Binding(get: { target != nil },set: { if !$0 { target = nil } }),titleVisibility: .visible) {
+        .alert(model.t("mobile.voices.consent_title"),isPresented: Binding(get: { target != nil },set: { if !$0 { target = nil } })) {
             if let target {
                 Button(model.t("mobile.voices.consent_confirm")) { importVoice(target); self.target = nil }
                 Button(model.t("common.cancel"),role: .cancel) { self.target = nil }
