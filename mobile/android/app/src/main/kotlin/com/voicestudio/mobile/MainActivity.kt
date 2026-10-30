@@ -152,6 +152,10 @@ fun contentReportClient()=ContentReportClient(BuildConfig.CONTENT_REPORTS_URL,Bu
                         composable("voice/{id}") {entry -> SpeakScreen(vm,entry.arguments?.getString("id"))}
                         composable("speak") {SpeakScreen(vm)}
                         composable("design") {VoiceDesignScreen(vm)}
+                        composable("community-design/{recipe}") {entry ->
+                            val recipe=remember(entry) {runCatching {kotlinx.serialization.json.Json.decodeFromString<com.voicestudio.mobile.local.GalleryEntry>(entry.arguments?.getString("recipe").orEmpty())}.getOrNull()}
+                            VoiceDesignScreen(vm,recipe)
+                        }
                         composable("stories") {ProductionScreen(vm,"stories")}
                         composable("audiobook") {ProductionScreen(vm,"audiobook")}
                         composable("batch") {com.voicestudio.mobile.features.dub.BatchDubScreen(vm)}

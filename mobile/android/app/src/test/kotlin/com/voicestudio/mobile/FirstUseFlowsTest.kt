@@ -74,9 +74,44 @@ class FirstUseFlowsTest {
         }
     }
 
+    @Test fun communityGalleryHasNamedVoicesWithoutAComputerOrModels()=runBlocking {
+        withPhone {vm ->
+            compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.waitUntil(5000) {compose.onAllNodes(hasText("The Librarian")).fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithText("The Librarian").assertExists()
+            compose.onNodeWithText("Search voices").performTextInput("Thalia")
+            compose.onNode(hasText("Thalia") and !hasSetTextAction()).assertExists()
+            compose.onNodeWithText("CC-BY-4.0",substring=true).assertExists()
+            Assert.assertNull(vm.api)
+            Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
+        }
+    }
+
+    @Test fun communityRecipeOpensRealDesignAndRecordedImportRequiresPermission()=runBlocking {
+        withPhone {vm ->
+            compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.waitUntil(5000) {compose.onAllNodes(hasText("The Librarian")).fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithText("Search voices").performTextInput("Thalia")
+            compose.onNodeWithText("Use voice").performScrollTo().performClick()
+            compose.onNodeWithText("Only clone voices you have permission to use").assertExists()
+            compose.onNodeWithText("Cancel").performClick()
+            Assert.assertTrue(vm.phone.state.value.voices.isEmpty())
+            compose.onNodeWithText("Search voices").performTextClearance()
+            compose.onNodeWithText("Search voices").performTextInput("The Librarian")
+            compose.onNodeWithText("Use voice").performScrollTo().performClick()
+            compose.onNodeWithText("The Librarian").assertExists()
+            compose.onNodeWithText("female, middle-aged, low pitch, british accent").assertDoesNotExist() // recipe is parsed into editable traits
+            compose.onNodeWithText("Female").assertExists()
+            compose.onNodeWithText("Script").assertExists()
+            Assert.assertTrue(vm.phone.downloads.progress.value.isEmpty())
+        }
+    }
+
     @Test fun galleryCanBrowseAndSelectPresetsBeforeDownloadingModels()=runBlocking {
         withPhone {vm ->
             compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.onNodeWithText("Community").performClick()
+            compose.onNodeWithText("This phone").performClick()
             compose.onNodeWithText("Kitten").assertExists()
             compose.onNodeWithTag("gallery.preset.kitten-mini-en-fp16.0").performScrollTo().performClick()
             compose.waitUntil(5000) {compose.onAllNodes(hasText("Type what you want to hear…") and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()}
@@ -90,6 +125,8 @@ class FirstUseFlowsTest {
     @Test fun gallerySearchFindsTheVoiceAndRetainsItsModelSelection()=runBlocking {
         withPhone {vm ->
             compose.onNodeWithTag("home.gallery").performScrollTo().performClick()
+            compose.onNodeWithText("Community").performClick()
+            compose.onNodeWithText("This phone").performClick()
             compose.onNodeWithText("Search voices").performTextInput("Voice 103")
             compose.onNodeWithTag("gallery.preset.kokoro-multi-int8.102").performScrollTo().performClick()
             compose.waitUntil(5000) {compose.onAllNodes(hasText("Type what you want to hear…") and hasSetTextAction()).fetchSemanticsNodes().isNotEmpty()}

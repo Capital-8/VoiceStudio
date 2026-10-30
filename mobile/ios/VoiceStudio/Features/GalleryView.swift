@@ -4,7 +4,7 @@ import VoiceStudioKit
 struct GalleryView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.vsTheme) private var theme
-    @State private var location = "phone"
+    @State private var location = "community"
     @State private var query = ""
     @State private var items: [CommunityItem] = []
     @State private var total = 0
@@ -25,9 +25,11 @@ struct GalleryView: View {
     }
     var body: some View {
         Page {
-            ChoicePicker(label: model.t("mobile.local.run_on"),selection: $location,options: [SelectionOption(id: "phone",title: model.t("mobile.local.this_phone")),SelectionOption(id: "computer",title: model.t("mobile.local.my_computer"))])
+            ChoicePicker(label: model.t("nav.gallery"),selection: $location,options: [SelectionOption(id: "community",title: model.t("gallery.zone_community")),SelectionOption(id: "phone",title: model.t("mobile.local.this_phone")),SelectionOption(id: "computer",title: model.t("mobile.local.my_computer"))])
             SearchField(prompt: model.t("mobile.voices.search"),text: $query)
-            if location == "phone" {
+            if location == "community" {
+                CommunityGalleryView(query: query)
+            } else if location == "phone" {
                 Text(model.t("gallery.all_voices",["count": String(phoneModels.reduce(0) { $0 + speakers($1).count })])).font(.headline)
                 if phoneModels.allSatisfy({ speakers($0).isEmpty }) { SearchEmptyState(query: query) }
                 ForEach(phoneModels) { item in

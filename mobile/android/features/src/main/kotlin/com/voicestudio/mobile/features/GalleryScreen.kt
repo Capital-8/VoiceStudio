@@ -20,7 +20,7 @@ import kotlinx.coroutines.*
     val host by vm.state.collectAsState()
     val scope=rememberCoroutineScope()
     val context=LocalContext.current
-    var location by rememberSaveable {mutableStateOf("phone")}
+    var location by rememberSaveable {mutableStateOf("community")}
     var query by rememberSaveable {mutableStateOf("")}
     var items by remember(host.connectionId) {mutableStateOf(emptyList<CommunityItem>())}
     var total by remember(host.connectionId) {mutableStateOf(0)}
@@ -43,9 +43,11 @@ import kotlinx.coroutines.*
     LaunchedEffect(location,host.connectionId) {if(location=="computer"&&items.isEmpty()) load() else vm.phone.refresh()}
     Screen {
         ScreenTitle("nav.gallery")
-        ChoicePicker("mobile.local.run_on",location,listOf(Choice("phone",tr("mobile.local.this_phone")),Choice("computer",tr("mobile.local.my_computer")))) {location=it}
+        ChoicePicker("nav.gallery",location,listOf(Choice("community",tr("gallery.zone_community")),Choice("phone",tr("mobile.local.this_phone")),Choice("computer",tr("mobile.local.my_computer")))) {location=it}
         Field("mobile.voices.search",query,{query=it})
-        if(location=="phone") {
+        if(location=="community") {
+            CommunityGalleryContent(vm,query,navigate)
+        } else if(location=="phone") {
             val presets=phone.models.filter {it.capability=="tts"}.map {model ->
                 val speakers=model.option("num_speakers","1").toIntOrNull()?.coerceIn(1,128) ?: 1
                 val matches=(0 until speakers).filter {speaker ->

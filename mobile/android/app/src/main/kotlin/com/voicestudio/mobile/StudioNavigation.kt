@@ -27,7 +27,7 @@ internal fun isWorkspace(route:String)=route in tabs
         route=="home" -> "nav.home"
         route=="transcriptions" -> "transcriptions.title"
         route=="handoff" -> "mobile.handoff.title"
-        route=="design" -> "nav.design"
+        route=="design"||route.startsWith("community-design/") -> "nav.design"
         route=="stories" -> "nav.stories"
         route=="audiobook" -> "audiobook.title"
         route=="batch" -> "batch.title"
