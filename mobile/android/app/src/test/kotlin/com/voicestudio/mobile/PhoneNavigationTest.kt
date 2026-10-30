@@ -37,7 +37,7 @@ class PhoneNavigationTest {
             compose.waitForIdle()
             assertFalse(vm.state.value.connected);assertNull(vm.api)
             fun tab(label: String) = compose.onAllNodesWithText(label).filter(hasClickAction()).onFirst()
-            for(label in listOf("Speak","Voices","Dub","Dictate","Settings")) tab(label).assertExists()
+            for(label in listOf("Speech","Voices","Dub","Dictate","Settings")) tab(label).assertExists()
             compose.onNodeWithText("Run on").assertDoesNotExist()
             tab("Voices").performClick();compose.onNodeWithText("Clone a voice").assertExists()
             tab("Dub").performClick();compose.onNodeWithText("Choose video or audio").assertExists()

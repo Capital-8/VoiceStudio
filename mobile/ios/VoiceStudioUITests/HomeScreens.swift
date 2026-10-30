@@ -11,7 +11,7 @@ final class HomeScreens: XCTestCase {
         XCTAssertLessThan(title.frame.midX, app.frame.width / 2)
         XCTAssertTrue(app.staticTexts["VoiceStudio"].exists)
         let attachment = XCTAttachment(screenshot: app.screenshot()); attachment.name = "Home-dark"; attachment.lifetime = .keepAlways; add(attachment)
-        for (route, title) in [("speak","Speak"),("voices","Clone a voice"),("dub","Dub"),("dictate","Dictate"),("models","Models"),("connect","Connect to VoiceStudio")] {
+        for (route, title) in [("speak","Speech"),("voices","Clone a voice"),("dub","Dub"),("dictate","Dictate"),("models","Models"),("connect","Connect to VoiceStudio")] {
             let card = app.buttons["home."+route]
             app.reveal(card)
             XCTAssertTrue(card.isHittable, route); card.tap()

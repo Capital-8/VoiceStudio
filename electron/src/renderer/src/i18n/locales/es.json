@@ -3431,7 +3431,7 @@
     "add_details": "Añadir detalles",
     "step_start": "Inicio",
     "step_agent": "Agente",
-    "step_speak": "Hablar",
+    "step_speak": "Voz sintética",
     "step_condition": "Condición",
     "step_call": "Llamada",
     "step_end": "Fin",
@@ -3798,7 +3798,7 @@
       "brought_by": "De la mano de"
     },
     "tabs": {
-      "speak": "Hablar",
+      "speak": "Voz sintética",
       "voices": "Voces",
       "dub": "Doblaje",
       "dictate": "Dictado",
@@ -4075,7 +4075,7 @@
       "preset_voice": "Voz {{number}}",
       "transfer": "{{received}} de {{total}}",
       "privacy": "Las tareas en el dispositivo se quedan en este teléfono. Solo las descargas de modelos, las denuncias que decidas enviar y tu ordenador emparejado usan la red.",
-      "computer_feature": "Esta función se ejecuta ahora en tu ordenador. Hablar y Dictado funcionan en este teléfono sin emparejar.",
+      "computer_feature": "Esta función se ejecuta ahora en tu ordenador. Voz sintética y Dictado funcionan en este teléfono sin emparejar.",
       "accepted": "Licencia aceptada",
       "not_accepted": "Licencia no aceptada",
       "receipt": "{{action}} · {{time}} · App {{version}} · Términos {{fingerprint}}"

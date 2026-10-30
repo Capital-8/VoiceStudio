@@ -4073,7 +4073,7 @@
       "preset_voice": "Voz {{number}}",
       "transfer": "{{received}} de {{total}}",
       "privacy": "As tarefas do dispositivo permanecen neste teléfono. Só as descargas de modelos, os informes que escollas enviar e o teu ordenador asociado usan a rede.",
-      "computer_feature": "Esta función execútase actualmente no teu ordenador. Podes usar Speak and Dictate neste teléfono sen vincular.",
+      "computer_feature": "Esta función execútase actualmente no teu ordenador. Podes usar Fala e Ditado neste teléfono sen vincular.",
       "accepted": "Licenza aceptada",
       "not_accepted": "Non se acepta licenza",
       "receipt": "{{action}} · {{time}} · Aplicación {{version}} · Condicións {{fingerprint}}"
