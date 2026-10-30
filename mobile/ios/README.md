@@ -237,5 +237,9 @@ presets; My computer keeps the paired library. Android implements the same flows
 
 Physical iPhone 18 Pro verification on 2026-10-31 confirms 50 named community
 entries without pairing/models, Thalia playback, an explicit Cancel/permission
-alert, and The Librarian's correct script and traits in Voice Design. Model
-download/licence acceptance and real inference were not performed in this review.
+alert, and The Librarian's correct script and traits in Voice Design. With owner approval, the 166.9 MB Kitten selection was then downloaded and used
+for real speech generation: a 9.0-second, 24 kHz mono WAV appeared in about seven
+seconds including UI overhead, and playback ran on the phone without a paired
+computer. Two presets produced different non-silent audio; pause, resume and
+end-of-file replay passed, and the saved WAV retained its synthetic marker.
+Community design/cloning inference still needs its separate model setup.
