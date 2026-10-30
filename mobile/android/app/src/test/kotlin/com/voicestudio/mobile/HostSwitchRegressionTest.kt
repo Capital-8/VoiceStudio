@@ -116,6 +116,27 @@ class HostSwitchRegressionTest {
             assertFalse(vm.state.value.canRetry)
         } finally {sample.delete()}
     }
+    @Test fun switchingCloneToPhoneCancelsTheComputerCompletion()=runBlocking<Unit> {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        val original=a.dispatcher;val started=java.util.concurrent.CountDownLatch(1)
+        a.dispatcher=object:Dispatcher() {
+            override fun dispatch(request:RecordedRequest):MockResponse = if(request.path=="/profiles"&&request.method=="POST") {
+                started.countDown();MockResponse().setBodyDelay(1,TimeUnit.SECONDS).setBody("""{"id":"stale-clone","name":"Stale clone"}""")
+            } else original.dispatch(request)
+        }
+        val sample=java.io.File.createTempFile("location-clone-",".wav",vm.getApplication<Application>().cacheDir).apply {writeText("RIFF fixture")}
+        var completed=0
+        try {
+            compose.setContent {StudioApp(vm)}
+            compose.onNodeWithTag("home.voices").performScrollTo().performClick()
+            vm.clone("Stale clone",sample,hasConsent={true}) {completed++}
+            withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
+            compose.onNodeWithText("This phone").performClick();awaitIdle()
+            delay(1100);shadowOf(Looper.getMainLooper()).idle()
+            assertEquals(0,completed);assertFalse(vm.state.value.canRetry)
+            compose.onNodeWithText("Voice name").assertExists()
+        } finally {sample.delete()}
+    }
     @Test fun failedCloneKeepsItsSampleAndOnlySuccessfulRetryCompletesCreation()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
         val original=a.dispatcher
@@ -154,6 +175,28 @@ class HostSwitchRegressionTest {
         assertEquals("host-b",vm.state.value.engines.active)
         var request=b.takeRequest(10,TimeUnit.MILLISECONDS)
         while(request!=null) {assertFalse(request.path.orEmpty().contains("host-a"));request=b.takeRequest(10,TimeUnit.MILLISECONDS)}
+    }
+    @Test fun selectingAPhoneVoiceOverridesTheRememberedComputerDestination()=runBlocking {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        withTimeout(10000) {vm.phone.state.first {!it.loading}}
+        vm.store.update {it.copy(runLocations=it.runLocations+("speak" to "computer"))}
+        val model=vm.phone.state.value.models.first {it.capability=="clone"}
+        val voice=vm.phone.voices.saveDesign("Imported gallery voice","Reference words",com.voicestudio.mobile.local.LocalAudio(FloatArray(4800) {.2f},24000),model,"female",42)
+        vm.phone.refresh()
+        val app=ApplicationProvider.getApplicationContext<Application>()
+        compose.setContent {
+            CompositionLocalProvider(com.voicestudio.mobile.features.LocalL10n provides com.voicestudio.mobile.l10n.L10n.load(app,"en")) {
+                com.voicestudio.mobile.designsystem.VoiceStudioTheme {
+                    com.voicestudio.mobile.features.speak.SpeakScreen(vm,initialPhoneVoiceID=voice.id)
+                }
+            }
+        }
+        compose.onNodeWithText("Imported gallery voice").assertExists()
+        compose.onNodeWithText("Computer").performClick()
+        compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
+        compose.onNodeWithText("This phone").performClick()
+        compose.onNodeWithText("Imported gallery voice").assertExists()
+        assertTrue(vm.phone.downloads.progress.value.isEmpty())
     }
     @Test fun changingRunLocationPreservesTheSharedSpeakScript() = runBlocking<Unit> {
         vm.connect(a.url("/").toString(),"","");awaitIdle()

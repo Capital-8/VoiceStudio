@@ -31,8 +31,10 @@ final class PhoneScreens: XCTestCase {
         search.tap(); search.typeText("Thalia"); app.buttons["keyboard.done"].tap()
         XCTAssertTrue(app.staticTexts["Thalia"].waitForExistence(timeout: 5))
         let use = app.buttons["Use voice"]; app.reveal(use); use.tap()
-        XCTAssertTrue(app.buttons["I have permission"].waitForExistence(timeout: 5))
-        app.buttons["Cancel"].tap()
+        let dialog = app.alerts.firstMatch
+        XCTAssertTrue(dialog.waitForExistence(timeout: 5))
+        XCTAssertTrue(dialog.buttons["I have permission"].exists)
+        dialog.buttons["Cancel"].tap()
         app.reveal(search, swipingDown: true); search.tap(); search.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue,count: 6)+"The Librarian")
         app.buttons["keyboard.done"].tap()
         let recipe = app.buttons["gallery.community.use.feat_00_the_librarian"]
