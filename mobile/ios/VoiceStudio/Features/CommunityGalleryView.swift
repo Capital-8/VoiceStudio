@@ -93,8 +93,9 @@ struct CommunityGalleryView: View {
         guard let client, let store = model.phone.voiceStore, active == nil else { return }; active = item.id
         work = Task { defer { active = nil; work = nil }; await model.performPhone {
             let file = try await client.recording(item); try Task.checkCancellation()
-            imported = try await store.importCommunity(item,source: file,consent: true)
+            let saved = try await store.importCommunity(item,source: file,consent: true)
             await model.phone.refresh()
+            try Task.checkCancellation(); imported = saved
         } }
     }
 }
