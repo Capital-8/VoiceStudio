@@ -163,6 +163,7 @@ fun contentReportClient()=ContentReportClient(BuildConfig.CONTENT_REPORTS_URL,Bu
                         composable("preset/{model}/{speaker}") {entry -> SpeakScreen(vm,initialPhonePreset=entry.arguments?.getString("speaker")?.toIntOrNull(),initialPhoneModelID=entry.arguments?.getString("model"))}
                         composable("tools") {VoiceToolsScreen(vm)}
                         composable("voices") {VoicesScreen(vm)}
+                        composable("clone") {VoicesScreen(vm,initialCreating=true,onCancel={nav.popBackStack()},onCreated={nav.navigate("voices") {popUpTo("clone") {inclusive=true}}})}
                         composable("dub") {DubScreen(vm)}
                         composable("dictate") {DictateScreen(vm,onHistory={nav.navigate("transcriptions")})}
                         composable("transcriptions") {TranscriptsScreen(vm,onDictate={nav.navigate("dictate")})}

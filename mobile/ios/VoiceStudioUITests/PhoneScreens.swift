@@ -1,6 +1,39 @@
 import XCTest
 
 final class PhoneScreens: XCTestCase {
+    @MainActor func testFirstUseOffersSpeechSetupWithoutLosingTheDraft() {
+        let app = launch()
+        let editor = app.textViews["speak.text"]
+        editor.tap(); editor.typeText("My first speech draft.")
+        app.buttons["keyboard.done"].tap()
+        let download = app.buttons["models.get"]
+        XCTAssertTrue(download.isHittable)
+        XCTAssertTrue(download.isEnabled)
+        XCTAssertEqual(download.label, "Download")
+        XCTAssertFalse(app.buttons["speak.generate"].exists)
+        download.tap()
+        XCTAssertTrue(app.buttons["models.accept"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["models.accept"].isEnabled)
+        app.buttons["Close"].tap()
+        XCTAssertEqual(editor.value as? String, "My first speech draft.")
+    }
+    @MainActor func testHomeCloningShortcutOpensCreationAndCancelReturnsHome() {
+        let app = XCUIApplication(); app.launchArguments = ["--ui-smoke", "-AppleLanguages", "(en)"]
+        app.launch(); app.declineConsent()
+        app.buttons["home.voices"].tap()
+        XCTAssertTrue(app.textFields["voices.clone.name"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Create clone"].isEnabled)
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.buttons["home.speak"].waitForExistence(timeout: 5))
+    }
+    @MainActor func testDictationExplainsSetupBeforeInvitingRecording() {
+        let app = launch()
+        app.tabButton("Dictate").tap()
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label BEGINSWITH %@", "Download a model (")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Tap to start"].exists)
+        XCTAssertFalse(app.buttons["dictate.record"].isEnabled)
+        XCTAssertTrue(app.buttons["models.get"].isEnabled)
+    }
     @MainActor private func launch(extra: [String] = []) -> XCUIApplication {
         let app = XCUIApplication(); app.launchArguments = ["--ui-smoke","-AppleLanguages","(en)"] + extra
         app.launch(); app.declineConsent()

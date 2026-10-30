@@ -156,7 +156,7 @@ import com.voicestudio.mobile.local.*
 }
 
 /** One explicit Get action starts the dependency list; each gated model keeps its own sheet. */
-@Composable fun MissingModelsCard(vm: StudioViewModel, feature: String, models: List<PhoneModel>) {
+@Composable fun MissingModelsCard(vm: StudioViewModel, feature: String, models: List<PhoneModel>, prominent: Boolean = false) {
     val state by vm.phone.state.collectAsState()
     val progress by vm.phone.downloads.progress.collectAsState()
     val preferences by vm.preferences.collectAsState()
@@ -184,14 +184,21 @@ import com.voicestudio.mobile.local.*
                     Text(label,style=MaterialTheme.typography.labelLarge)
                     if(needed.size==1) Text(tr("mobile.simple.${needed.single().capability}"),style=MaterialTheme.typography.labelSmall,color=role("textMuted"))
                 }
-                if(running) IconAction("common.cancel",Icons.Default.Close) {queue=emptyList();needed.forEach(vm.phone::cancelDownload)}
-                else TextButton(enabled=queue.isEmpty()&&needed.all {it.fits(vm.phone.ramBytes)},onClick={queue=needed.map {it.id}}) {Text(tr("mobile.simple.get"))}
+                if(!prominent) {
+                    if(running) IconAction("common.cancel",Icons.Default.Close) {queue=emptyList();needed.forEach(vm.phone::cancelDownload)}
+                    else TextButton(enabled=queue.isEmpty()&&needed.all {it.fits(vm.phone.ramBytes)},onClick={queue=needed.map {it.id}}) {Text(tr("mobile.local.download"))}
+                }
             }
             needed.firstOrNull {!it.fits(vm.phone.ramBytes)}?.let {Text(tr("mobile.simple.ram",mapOf("ram" to it.minRamGb)),color=role("textMuted"))}
             if(running) {
                 val total=needed.sumOf {progress[it.id]?.total ?: it.totalBytes}
                 val received=needed.sumOf {progress[it.id]?.received ?: 0L}
                 LinearProgressIndicator(progress={(received.toFloat()/total.coerceAtLeast(1)).coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth())
+            }
+            if(prominent) {
+                Button(modifier=Modifier.fillMaxWidth(),enabled=running||(queue.isEmpty()&&needed.all {it.fits(vm.phone.ramBytes)}),onClick={
+                    if(running) {queue=emptyList();needed.forEach(vm.phone::cancelDownload)} else queue=needed.map {it.id}
+                }) {Text(tr(if(running) "common.cancel" else "mobile.local.download"))}
             }
         }
     }

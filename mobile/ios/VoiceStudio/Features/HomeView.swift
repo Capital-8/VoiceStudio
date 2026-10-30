@@ -40,7 +40,7 @@ struct HomeView: View {
                 .clipShape(RoundedRectangle(cornerRadius: VSTokens.iosCardRadius, style: .continuous))
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: typeSize.isAccessibilitySize ? 300 : 155), spacing: VSTokens.spacingGap)], spacing: VSTokens.spacingGap) {
                     destination("speak", title: "mobile.tabs.speak", detail: "mobile.speak.placeholder", icon: "waveform", primary: true) { SpeakView() }
-                    destination("voices", title: "nav.clone", detail: "clone.reference_hint", icon: "person.wave.2", primary: true) { VoicesView() }
+                    destination("voices", title: "nav.clone", detail: "clone.reference_hint", icon: "person.wave.2", primary: true) { CloneView() }
                     destination("dub", title: "nav.dub", detail: "homeUi.dub", icon: "film", primary: true) { DubView() }
                     destination("dictate", title: "nav.dictation", detail: "mobile.dictate.tap_to_start", icon: "mic") { DictateView() }
                     destination("models", title: "mobile.local.models", detail: "mobile.local.installed", icon: "arrow.down.circle") { ModelsView() }

@@ -60,7 +60,6 @@ struct SpeakView: View {
             if route == .connect { NavigationLink(model.t("mobile.settings.connection")) { ConnectView() } }
             speechEditor
             speechOptions
-            if route == .download { LocalDownloadPrompt(items: phoneModel.map { [$0] } ?? [], feature: "mobile.tabs.speak") }
             if player.file != nil || player.playing {
                 AudioPlayerView(player: player)
                 if let result { ReportButton(subject: result, reporting: $reporting).studioButton(.tertiary) }
@@ -73,7 +72,11 @@ struct SpeakView: View {
             recentGenerations.disabled(exporting)
         }.navigationTitle(model.t("mobile.tabs.speak")).navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            generationControls.padding(.horizontal, Theme.compactInset).padding(.vertical, VSTokens.spacingGap / 2)
+            Group {
+                if route == .download {
+                    LocalDownloadPrompt(items: phoneModel.map { [$0] } ?? [], feature: "mobile.tabs.speak", prominent: true)
+                } else { generationControls }
+            }.padding(.horizontal, Theme.compactInset).padding(.vertical, VSTokens.spacingGap / 2)
         }
         .onChange(of: model.inventory?.tts.active, initial: true) { _, _ in selection.reconcile(inventory: model.inventory, profiles: model.profiles) }
         .onChange(of: model.profiles.map(\.id)) { _, _ in selection.reconcile(inventory: model.inventory, profiles: model.profiles) }

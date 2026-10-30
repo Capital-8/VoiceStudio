@@ -220,3 +220,13 @@ and press Option-Command-Return; Run (Command-R) is still a full rebuild.
 
 Home identifies debpalash and velixio with a small core-maintainer star on their
 avatars; VoiceOver announces the localized role.
+
+### Physical iPhone first-use review
+
+The 2026-10-31 iPhone 18 Pro review found hidden navigation labels, an extra
+library step in Home’s cloning shortcut, disabled speech generation before model
+setup, and dictation inviting a tap on a disabled microphone. Navigation now
+keeps visible labels, Home opens clone creation directly, Speak pins model setup
+before generation, and Dictate explains the required download. The same first-use
+flows are implemented on Android. Licence acceptance remains explicit and closing
+a review preserves the speech draft without starting a download.

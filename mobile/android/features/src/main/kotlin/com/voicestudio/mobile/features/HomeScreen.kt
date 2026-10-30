@@ -78,7 +78,7 @@ private val destinations = listOf(
                 Column(verticalArrangement=Arrangement.spacedBy(12.dp)) {
                     destinations.chunked(columns).forEach { group ->
                         Row(horizontalArrangement=Arrangement.spacedBy(12.dp)) {
-                            group.forEach { item -> HomeCard(item,Modifier.weight(1f)) {navigate(item.route)} }
+                            group.forEach { item -> HomeCard(item,Modifier.weight(1f)) {navigate(if(item.route=="voices") "clone" else item.route)} }
                         }
                     }
                 }
