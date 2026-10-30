@@ -66,6 +66,32 @@ class HostSwitchRegressionTest {
         vm=StudioViewModel(app,store);awaitIdle()
     }
     @After fun teardown() {vm.viewModelScope.cancel(); a.shutdown(); b.shutdown()}
+    @Test fun computerCloneRetryRechecksVoiceConsentBeforeSending()=runBlocking {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        val original=a.dispatcher
+        val requests=java.util.concurrent.atomic.AtomicInteger()
+        a.dispatcher=object:Dispatcher() {
+            override fun dispatch(request:RecordedRequest):MockResponse =
+                if(request.path=="/profiles"&&request.method=="POST") {
+                    requests.incrementAndGet();MockResponse().setResponseCode(500)
+                } else original.dispatch(request)
+        }
+        val sample=java.io.File.createTempFile("consent-clone-",".wav",vm.getApplication<Application>().cacheDir)
+        sample.writeText("RIFF test fixture")
+        var consent=true
+        var completed=0
+        try {
+            vm.clone("My clone",sample,hasConsent={consent}) {completed++};awaitIdle()
+            assertEquals(1,requests.get())
+            assertTrue(vm.state.value.canRetry)
+            consent=false
+            vm.retryError();awaitIdle()
+            assertEquals("Withdrawn consent must prevent another upload",1,requests.get())
+            assertEquals(0,completed)
+            assertTrue(sample.exists())
+            assertFalse(vm.state.value.canRetry)
+        } finally {sample.delete()}
+    }
     @Test fun cancelledComputerCloneCannotCompleteOrNavigateLater()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
         val original=a.dispatcher
@@ -81,7 +107,7 @@ class HostSwitchRegressionTest {
         sample.writeText("RIFF test fixture")
         var completed=0
         try {
-            vm.clone("Cancelled clone",sample) {completed++}
+            vm.clone("Cancelled clone",sample,hasConsent={true}) {completed++}
             withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
             vm.cancelClone();awaitIdle()
             assertEquals(0,completed)
@@ -105,7 +131,7 @@ class HostSwitchRegressionTest {
         sample.writeText("RIFF test fixture")
         var completed=0
         try {
-            vm.clone("My clone",sample) {completed++};awaitIdle()
+            vm.clone("My clone",sample,hasConsent={true}) {completed++};awaitIdle()
             assertEquals(0,completed)
             assertTrue("A failed request must retain the original input for retry",sample.exists())
             assertNotNull(vm.state.value.error)
