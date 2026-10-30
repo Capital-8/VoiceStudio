@@ -1,0 +1,48 @@
+name: iPhone development build
+
+on:
+  push:
+    branches: [device/iphone-wireless-20261031]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: mobile/native/ios/build
+          key: ios-native-${{ hashFiles('mobile/native/pins.json', 'mobile/native/ios/**', '!mobile/native/ios/build/**') }}
+      - name: Prepare native runtimes
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          brew install cmake ninja xcodegen
+          bash mobile/native/ios/build.sh ios
+      - name: Build the unsigned development app
+        run: |
+          xcodegen generate --spec mobile/ios/VoiceStudio/project.yml
+          xcodebuild -project mobile/ios/VoiceStudio/VoiceStudio.xcodeproj \
+            -scheme VoiceStudio -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/device" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+          mkdir -p "$RUNNER_TEMP/delivery/Payload"
+          cp -R "$RUNNER_TEMP/device/Build/Products/Release-iphoneos/VoiceStudio.app" "$RUNNER_TEMP/delivery/Payload/"
+          (cd "$RUNNER_TEMP/delivery" && zip -qry "$RUNNER_TEMP/VoiceStudio-development.ipa" Payload)
+          shasum -a 256 "$RUNNER_TEMP/VoiceStudio-development.ipa" > "$RUNNER_TEMP/VoiceStudio-development.sha256"
+          git rev-parse HEAD > "$RUNNER_TEMP/VoiceStudio-development.commit"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: VoiceStudio-iPhone-development
+          path: |
+            ${{ runner.temp }}/VoiceStudio-development.ipa
+            ${{ runner.temp }}/VoiceStudio-development.sha256
+            ${{ runner.temp }}/VoiceStudio-development.commit
+          if-no-files-found: error
+          retention-days: 7

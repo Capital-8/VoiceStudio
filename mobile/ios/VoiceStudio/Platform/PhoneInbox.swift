@@ -9,7 +9,7 @@ struct PhoneIncoming: Identifiable {
 }
 @MainActor @Observable final class PhoneInbox {
     static let shared = PhoneInbox()
-    static let group = "group.sh.voicestudio.mobile"
+    static let group = "group.sh.voicestudio.mobile.development"
     var incoming: PhoneIncoming?
     var route: String?
     func receive(_ url: URL) throws {

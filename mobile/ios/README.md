@@ -1,6 +1,12 @@
 # VoiceStudio for iOS
 
 Native SwiftUI app for iOS 17+, iPhone and iPad. Speak, voice cloning, Dictate and dubbing run downloaded models on the phone, offline. Pairing a VoiceStudio computer is optional and adds its engines. Every task remembers its own phone/computer choice; the segmented control appears only while paired. All five tabs work without pairing. Settings contains Connect and Models.
+
+This device-testing branch uses `sh.voicestudio.mobile.development` and
+`group.sh.voicestudio.mobile.development` for a separately provisioned development
+installation. The app, Share extension and widget share that development identity;
+all inference and sharing features are retained.
+
 ## Build and checks
 
 Swift 6 Command Line Tools, Python 3.9+ and CMake run the macOS package checks. XcodeGen 2.46 generates the app project. Full Xcode with the iOS SDK is required for the app, native xcframeworks and UI tests. Device signing uses your own development team. The app and Share extension need the `group.sh.voicestudio.mobile` App Group enabled in Signing & Capabilities; use a group registered to your team when customizing the bundle IDs. Both targets must use the same group in their entitlements and `PhoneInbox`/`ShareViewController`. Background GPU continuation also needs the `com.apple.developer.background-tasks.continued-processing.gpu` entitlement in the signed app profile on supported iOS26+ hardware; scheduler approval, not a source entitlement file, determines availability. CPU fallback is explicit and preserves checkpoints. The root `package.json` supplies the app version; there is no mobile version mirror.
