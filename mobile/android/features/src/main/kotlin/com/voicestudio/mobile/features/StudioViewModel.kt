@@ -153,7 +153,14 @@ class StudioViewModel @JvmOverloads constructor(application: Application, val st
     }
     fun star(item: HistoryItem) = run { api?.star(item.id, !item.isStarred); reload() }
     fun deleteHistory(item: HistoryItem) = run { api?.deleteHistory(item.id); reload() }
-    fun clone(name: String, file: File) = run { api?.clone(name, file); file.delete(); reload() }
+    fun clone(name: String, file: File, created: ()->Unit = {}) = run {
+        val current=api ?: throw ClientFailure("mobile.android.disconnected_offline")
+        val profile=current.clone(name,file)
+        if(api!==current) return@run
+        mutable.update {it.copy(profiles=it.profiles.filterNot {saved -> saved.id==profile.id}+profile)}
+        file.delete()
+        created()
+    }
     fun rename(id: String, name: String) = run { api?.rename(id, name); reload() }
     fun deleteProfile(id: String) = run { api?.deleteProfile(id); reload() }
     fun forget(url: String) = run {

@@ -94,7 +94,7 @@ import java.io.File
         } else Secondary("mobile.voices.record",onClick=record)
         if(sample!=null&&!recording) Text(tr("mobile.android.sample_ready"))
         Action("mobile.voices.new_clone",permission&&sample!=null&&name.isNotBlank()&&!state.busy&&!recording&&phone.progress==null&&(location==RunLocation.COMPUTER||cloneReady)) {
-            if(location==RunLocation.COMPUTER) {vm.clone(name,File(sample!!));sample=null;name="";permission=false;cloning=false;onCreated()}
+            if(location==RunLocation.COMPUTER) vm.clone(name,File(sample!!)) {sample=null;name="";permission=false;cloning=false;onCreated()}
             else vm.phone.clone(name,File(sample!!),asr!!,model!!,permission) {sample=null;name="";permission=false;cloning=false;onCreated()}
         }
         Secondary("common.cancel",!recording) {vm.phone.cancelInference();cloning=false;sample?.let {File(it).delete()};sample=null;onCancel()}

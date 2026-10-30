@@ -16,6 +16,11 @@ final class HomeScreens: XCTestCase {
             app.reveal(card)
             XCTAssertTrue(card.isHittable, route); card.tap()
             XCTAssertTrue(app.navigationBars[title].waitForExistence(timeout: 5), route)
+            if route == "voices" {
+                app.buttons["Cancel"].tap()
+                XCTAssertTrue(app.navigationBars[title].waitForNonExistence(timeout: 5))
+                continue
+            }
             // A Back tap during the push transition can be dropped; retry until Home shows,
             // and never tap again once it does (Home's first bar button is Projects).
             for _ in 0..<3 where !app.navigationBars["Home"].exists {
