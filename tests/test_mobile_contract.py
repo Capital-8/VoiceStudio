@@ -188,8 +188,10 @@ def test_mobile_models_registry_licence_gates_and_fingerprints():
     assert omni["licence"]["category"] == "non-commercial"
     assert omni["licence"]["requires_acceptance"] is True
     assert {file["path"] for file in omni["files"]} == {
-        "omnivoice-base-Q4_K_M.gguf", "omnivoice-tokenizer-Q4_K_M.gguf",
+        "omnivoice-base-Q8_0.gguf", "omnivoice-tokenizer-F32.gguf",
     }
+    assert omni["min_ram_gb"] >= 8
+    assert omni["config"]["requires_reference_audio"] is True
     translation = next(model for model in catalogue["models"] if model["capability"] == "translate")
     assert translation["total_bytes"] <= 1_200_000_000
     assert translation["licence"]["category"] == "commercial-ok"

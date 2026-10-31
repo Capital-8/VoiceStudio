@@ -606,15 +606,15 @@
       "revision": "361609388ae572a820d085185bbbe2a2aac4b30e",
       "files": [
         {
-          "path": "omnivoice-base-Q4_K_M.gguf",
-          "size": 407485216,
-          "sha256": "4836ba5affcb83c04d08b3e96b6e48ac839947ee3864188739807b68e0e159c6",
+          "path": "omnivoice-base-Q8_0.gguf",
+          "size": 656395008,
+          "sha256": "2882d887921798aea13d45236556bdf8012842ab6f8cd2690943eead6289f298",
           "role": "model"
         },
         {
-          "path": "omnivoice-tokenizer-Q4_K_M.gguf",
-          "size": 252474112,
-          "sha256": "988fc32bc699bce361c44e9af8383be9811960441f293eb5ab4ec6bf6386378d",
+          "path": "omnivoice-tokenizer-F32.gguf",
+          "size": 734300704,
+          "sha256": "83820c6316da023076af7c1d06de5e38dcd09ae9f42203675bf8b3bd9a58e330",
           "role": "tokenizer"
         }
       ],
@@ -631,15 +631,16 @@
         "ru",
         "ar"
       ],
-      "min_ram_gb": 6,
+      "min_ram_gb": 8,
       "config": {
         "sample_rate": 24000,
-        "quantization": "Q4_K_M",
+        "quantization": "Q8_0",
         "reference_sample_rate": 24000,
         "reference_channels": 1,
         "requires_reference_audio": true,
         "requires_reference_text": true,
-        "num_threads": 2
+        "num_threads": 2,
+        "tokenizer_precision": "F32"
       },
       "licence": {
         "id": "CC-BY-NC-4.0; Higgs Audio 2; Meta Llama 3",
@@ -665,7 +666,7 @@
           "documents": []
         }
       },
-      "total_bytes": 659959328
+      "total_bytes": 1390695712
     },
     {
       "id": "qwen3-1-7b-q4-k-m",

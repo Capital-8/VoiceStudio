@@ -102,6 +102,21 @@ class ReviewUiRegressionTest {
             compose.onNodeWithText("Voice 1").assertDoesNotExist()
         } finally {vm.viewModelScope.cancel()}
     }
+    @Test fun omniSpeechDoesNotOfferUnconditionedDefaultVoice() {
+        shadowOf(app.getSystemService(android.app.ActivityManager::class.java)).setMemoryInfo(android.app.ActivityManager.MemoryInfo().apply {totalMem=16_000_000_000})
+        val vm=vm()
+        try {
+            content {SpeakScreen(vm)}
+            await {!vm.phone.state.value.loading&&vm.phone.state.value.models.isNotEmpty()}
+            compose.waitUntil(5000) {compose.onAllNodesWithText("Kitten").fetchSemanticsNodes().isNotEmpty()}
+            compose.onNodeWithContentDescription("Model, currently Kitten").performScrollTo().performClick()
+            compose.onNodeWithText("Search").performTextReplacement("OmniVoice")
+            compose.onNode(hasText("OmniVoice") and hasClickAction() and !hasSetTextAction()).performClick()
+            compose.onNodeWithText("Choose a saved voice to use this model. You can import one from Gallery.").performScrollTo().assertExists()
+            compose.onNodeWithText("Default voice").assertDoesNotExist()
+            compose.onNodeWithContentDescription("Voice, currently Choose a voice").assertExists()
+        } finally {vm.viewModelScope.cancel()}
+    }
     @Test fun modelSwitchDropsOutOfRangePresetImmediately() {
         shadowOf(app.getSystemService(android.app.ActivityManager::class.java)).setMemoryInfo(android.app.ActivityManager.MemoryInfo().apply {totalMem=16_000_000_000})
         val vm=vm()

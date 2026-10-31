@@ -84,8 +84,7 @@ class PhoneLocalEngine(private val models: ModelDownloads): LocalEngine {
             catch(e:Exception) {throw ClientFailure("mobile.local.inference_failed")}
         }
     override suspend fun synthesize(model: PhoneModel,text: String,speaker: Int,speed: Float,language: String?,progress: (Float)->Unit): LocalAudio {
-        if(model.supportsDesign) return design(model,text,"",42,progress)
-        if(model.requiresReference) throw ClientFailure("mobile.local.model_incompatible")
+        if(model.requiresReference) throw ClientFailure("mobile.speak.reference_required")
         return sherpaSpeech(model,text,speaker,speed,language,null,"",progress)
     }
     private suspend fun sherpaSpeech(model:PhoneModel,text:String,speaker:Int,speed:Float,language:String?,reference:LocalAudio?,referenceText:String,progress:(Float)->Unit):LocalAudio = execute(model,if(reference==null) "tts" else "clone",progress) {dir,job ->

@@ -718,3 +718,42 @@ func realSpeechModelsProduceMarkedAudioOffline(id: String) async throws {
     try wave.write(to: output)
     print("Speech inference \(id): \(Double(audio.samples.count)/Double(audio.sampleRate)) seconds at \(audio.sampleRate) Hz")
 }
+
+@Test(.enabled(if: ProcessInfo.processInfo.environment["VOICESTUDIO_REAL_OMNI_SPEECH"] == "1"))
+func realOmniSavedVoiceSpeechIsRecognizableWithoutRepeats() async throws {
+    let models = try ModelCatalogue.decode(Data(contentsOf: repository.appendingPathComponent("mobile/contract/models.json"))).models
+    let omni = try #require(models.first { $0.id == "omnivoice-q4-k-m" })
+    let kitten = try #require(models.first { $0.id == "kitten-mini-en-fp16" })
+    let asr = try #require(models.first { $0.id == "whisper-tiny-int8" })
+    let store = try ModelStore(root: repository.appendingPathComponent("mobile/ios/.cache/inference-models"))
+    for model in [omni,kitten,asr] { try await store.accept(model,fingerprint: model.licence.terms_fingerprint,appVersion: "inference-test",accepted: true) }
+    let env = ProcessInfo.processInfo.environment
+    let engine = NativeLocalEngine(store: store,libraries: [.sherpa: try #require(env["SHERPA_ONNX_LIBRARY"]),.omni: try #require(env["OMNIVOICE_LIBRARY"])])
+    let referenceText = "Hello. This is VoiceStudio running directly on my iPhone. This speech was generated on the phone."
+    let reference = try await engine.synthesize(model: kitten,text: referenceText)
+    for text in ["Hi hello", "Hello. This is a local speech test."] {
+        let audio = try await engine.clone(model: omni,text: text,reference: PCMChunk(samples: reference.samples,sampleRate: reference.sampleRate),referenceText: referenceText)
+        let recognized = try await engine.transcribe(model: asr,audio: PCMChunk(samples: audio.samples,sampleRate: audio.sampleRate))
+        print("OmniVoice saved-voice speech recognized:",recognized)
+        let words = recognized.lowercased().split { !$0.isLetter }.map(String.init)
+        #expect(words.filter { $0 == "hello" }.count == 1)
+        if text == "Hi hello" { #expect(words.filter { $0 == "hi" }.count == 1) }
+        else { #expect(words.contains("speech") && words.contains("test")) }
+        #expect(audio.samples.allSatisfy { $0.isFinite })
+        let wave = try audio.markSynthetic()
+        #expect(wave.range(of: Data("VoiceStudio synthetic audio".utf8)) != nil)
+    }
+}
+
+@Test func localOmniSpeechRequiresASavedVoiceBeforeLoadingTheModel() async throws {
+    let root = try localDirectory(); defer { try? FileManager.default.removeItem(at: root) }
+    let engine = NativeLocalEngine(store: try ModelStore(root: root))
+    let omni = try #require(ModelCatalogue.decode(Data(contentsOf: repository.appendingPathComponent("mobile/contract/models.json"))).models.first { $0.id == "omnivoice-q4-k-m" })
+    #expect(omni.supportsSpeech && omni.supportsDesign && omni.requiresReference)
+    do {
+        _ = try await engine.synthesize(model: omni,text: "Hi hello")
+        Issue.record("OmniVoice must not silently use unconditioned voice design for Speech")
+    } catch let error as ClientError {
+        #expect(error.key == "mobile.speak.reference_required")
+    }
+}

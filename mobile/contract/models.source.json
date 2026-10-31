@@ -490,15 +490,15 @@
       "revision": "361609388ae572a820d085185bbbe2a2aac4b30e",
       "files": [
         {
-          "path": "omnivoice-base-Q4_K_M.gguf",
-          "size": 407485216,
-          "sha256": "4836ba5affcb83c04d08b3e96b6e48ac839947ee3864188739807b68e0e159c6",
+          "path": "omnivoice-base-Q8_0.gguf",
+          "size": 656395008,
+          "sha256": "2882d887921798aea13d45236556bdf8012842ab6f8cd2690943eead6289f298",
           "role": "model"
         },
         {
-          "path": "omnivoice-tokenizer-Q4_K_M.gguf",
-          "size": 252474112,
-          "sha256": "988fc32bc699bce361c44e9af8383be9811960441f293eb5ab4ec6bf6386378d",
+          "path": "omnivoice-tokenizer-F32.gguf",
+          "size": 734300704,
+          "sha256": "83820c6316da023076af7c1d06de5e38dcd09ae9f42203675bf8b3bd9a58e330",
           "role": "tokenizer"
         }
       ],
@@ -515,17 +515,18 @@
         "ru",
         "ar"
       ],
-      "min_ram_gb": 6,
+      "min_ram_gb": 8,
       "config": {
         "sample_rate": 24000,
-        "quantization": "Q4_K_M",
+        "quantization": "Q8_0",
         "reference_sample_rate": 24000,
         "reference_channels": 1,
         "requires_reference_audio": true,
         "requires_reference_text": true,
-        "num_threads": 2
+        "num_threads": 2,
+        "tokenizer_precision": "F32"
       },
-      "selection_rationale": "Exactly the desktop source_commit_sha. The older conversion card incorrectly labels upstream and tokenizer terms Apache-2.0; retain the registry non-commercial restriction and tokenizer conditions. The 6 GB minimum includes working memory and app/OS headroom, not merely weight size."
+      "selection_rationale": "Same immutable desktop source revision. Q8_0 base and the native F32 codec follow the runtime author precision recommendation; Q4 saved-reference short speech repeated words, while the Q8/F32 saved-reference path matched the prompt without repetitions. Reference-free short speech was unreliable with both packs. Speech requires a saved voice; Voice Design remains explicit. The stable legacy id preserves preferences and the installed-model directory. The 8 GB minimum reserves headroom for the larger weights and inference. Retain the registry non-commercial restriction and tokenizer conditions despite the older conversion card Apache label."
     },
     {
       "id": "qwen3-1-7b-q4-k-m",
