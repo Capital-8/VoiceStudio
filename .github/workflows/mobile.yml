@@ -222,7 +222,9 @@ jobs:
   # native code the phones run. Models are user-started downloads in the app;
   # here they are fetched for the test with its explicit test-licence flag.
   ios-inference:
-    runs-on: macos-15
+    # Standard Intel runners have 14 GB RAM; standard ARM runners have 7 GB.
+    # The verified OmniVoice pack requires 8 GB, including inference headroom.
+    runs-on: macos-15-intel
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -235,7 +237,7 @@ jobs:
           path: |
             mobile/native/ios/build/macos
             mobile/ios/.cache/inference-models
-          key: ios-inference-${{ hashFiles('mobile/native/pins.json', 'mobile/native/ios/build.py', 'mobile/native/ios/patches/**', 'mobile/contract/models.json') }}
+          key: ios-inference-${{ runner.arch }}-${{ hashFiles('mobile/native/pins.json', 'mobile/native/ios/build.py', 'mobile/native/ios/patches/**', 'mobile/contract/models.json') }}
 
       - name: Fetch smallest models
         run: python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences

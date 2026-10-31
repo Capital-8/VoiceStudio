@@ -144,9 +144,9 @@ Electron and Android.
   starting recording or inference. Saved voice-design recipes reopen for editing.
 
 Production workspaces are available from **Home** on both iOS and Android.
-Install models in Models first. Voice design and saved-voice speech use
-OmniVoice and its existing licence gate; translation uses the phone translation
-model. Voice designs save their generated sample, traits and seed. References
+Install models in Models first. Voice Design uses OmniVoice. Saved-voice speech
+uses OmniVoice, Pocket TTS or ZipVoice, with each model’s licence gate; translation
+uses the phone translation model. Voice designs save their generated sample, traits and seed. References
 are limited to 30 seconds; longer design results remain playable/shareable.
 
 Stories, books, workflows and queued dubs keep completed work on disk. Android
