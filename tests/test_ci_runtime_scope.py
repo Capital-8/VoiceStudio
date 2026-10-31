@@ -117,3 +117,13 @@ def test_all_workflows_share_the_conservative_runtime_classifier(filename):
              "install-smoke.yml": ["install"], "cosyvoice-dependencies.yml": ["native-dependencies"]}
     for name in names[filename]:
         assert "needs.changes.outputs.runtime != 'false'" in jobs[name]["if"]
+
+
+def test_backend_smokes_run_after_success_despite_a_skipped_internal_approval():
+    workflow = yaml.load((ROOT / ".github/workflows/ci.yml").read_text(), Loader=yaml.BaseLoader)
+    smoke = workflow["jobs"]["smoke-matrix"]
+    assert smoke["needs"] == "test-python"
+    # An explicit status function avoids Actions' implicit success() propagating
+    # the skipped approve-external ancestor through an otherwise successful job.
+    assert "!cancelled()" in smoke.get("if", "")
+    assert "needs.test-python.result == 'success'" in smoke["if"]

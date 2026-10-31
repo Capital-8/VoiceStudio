@@ -607,6 +607,9 @@ jobs:
     # After the Python tests (the fast-failing half), not the whole test gate: waiting for
     # the Electron jobs too left these 1-4 minute jobs idle for ~9 minutes of every run.
     needs: test-python
+    # Internal approval is intentionally skipped; override implicit success()
+    # so that skipped ancestor does not silently skip these code checks too.
+    if: ${{ !cancelled() && needs.test-python.result == 'success' }}
     strategy:
       fail-fast: false
       matrix:
