@@ -105,7 +105,7 @@ def test_only_an_explicit_successful_skip_can_satisfy_the_required_check():
         assert subprocess.run(["bash", "-eu", "-c", script], env=env | override, capture_output=True).returncode != 0
 
 
-@pytest.mark.parametrize("filename", ["ci.yml", "mobile.yml", "security.yml"])
+@pytest.mark.parametrize("filename", ["ci.yml", "mobile.yml", "security.yml", "install-smoke.yml", "cosyvoice-dependencies.yml"])
 def test_all_workflows_share_the_conservative_runtime_classifier(filename):
     workflow = yaml.load((ROOT / ".github/workflows" / filename).read_text(), Loader=yaml.BaseLoader)
     jobs = workflow["jobs"]
@@ -113,6 +113,7 @@ def test_all_workflows_share_the_conservative_runtime_classifier(filename):
     assert any(step.get("run") == "python3 .github/scripts/ci_scope.py" for step in jobs["changes"]["steps"])
     names = {"ci.yml": ["installer", "test-python", "test-electron", "electron-smokes", "ui-crawler", "linux-native-package", "electron-ui"],
              "mobile.yml": ["android", "ios", "ios-inference", "android-inference", "android-screenshots"],
-             "security.yml": ["codeql", "bandit", "dependencies"]}
+             "security.yml": ["codeql", "bandit", "dependencies"],
+             "install-smoke.yml": ["install"], "cosyvoice-dependencies.yml": ["native-dependencies"]}
     for name in names[filename]:
         assert "needs.changes.outputs.runtime != 'false'" in jobs[name]["if"]
