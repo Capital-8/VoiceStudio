@@ -46,7 +46,7 @@ def runtime_needed(files: list[dict], limit: int) -> bool:
 def detect(event_name: str, event: dict, repo: str) -> bool:
     if event_name == "pull_request":
         endpoint = f"repos/{repo}/pulls/{int(event['number'])}/files"
-        args, limit = ["--paginate", "--slurp", "--jq", "add"], 3000
+        args, limit = ["--paginate", "--slurp"], 3000
     elif event_name in {"push", "merge_group"}:
         base, head = ((event.get("before"), event.get("after")) if event_name == "push"
                       else (event["merge_group"]["base_sha"], event["merge_group"]["head_sha"]))
@@ -58,7 +58,12 @@ def detect(event_name: str, event: dict, repo: str) -> bool:
         # Explicit manual runs, releases and scheduled audits always run fully.
         return True
     result = subprocess.run(["gh", "api", endpoint, *args], check=True, capture_output=True, text=True)
-    return runtime_needed(json.loads(result.stdout), limit)
+    payload = json.loads(result.stdout)
+    if event_name == "pull_request":
+        if not isinstance(payload, list) or not all(isinstance(page, list) for page in payload):
+            return True
+        payload = [file for page in payload for file in page]
+    return runtime_needed(payload, limit)
 
 
 def main() -> None:

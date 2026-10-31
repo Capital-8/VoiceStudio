@@ -63,11 +63,13 @@ def test_api_scope_covers_pr_push_and_merge_queue(monkeypatch, event_name, event
     requests = []
     def run(args, **kwargs):
         requests.append(args)
-        return subprocess.CompletedProcess(args, 0, json.dumps([{"status": "modified", "filename": "README.md"}]))
+        files = [{"status": "modified", "filename": "README.md"}]
+        return subprocess.CompletedProcess(args, 0, json.dumps([files] if event_name == "pull_request" else files))
     monkeypatch.setattr(scope.subprocess, "run", run)
     assert not scope.detect(event_name, event, "owner/repo")
     if event_name == "pull_request":
         assert "--paginate" in requests[0] and "--slurp" in requests[0]
+        assert "--jq" not in requests[0], "gh cannot combine --slurp with --jq"
     else:
         assert "/compare/" in requests[0][2]
 
