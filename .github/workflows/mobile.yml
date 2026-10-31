@@ -255,6 +255,19 @@ jobs:
           export SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
           mobile/ios/scripts/check-swift.sh test --filter realSpeechModels --no-parallel
 
+      - name: Fetch OmniVoice saved-voice Speech pack
+        run: python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences --omni-speech
+
+      - name: Real OmniVoice Speech word fidelity
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          mobile/native/ios/build.sh macos-runtimes
+          export VOICESTUDIO_REAL_OMNI_SPEECH=1
+          export SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
+          export OMNIVOICE_LIBRARY="$(python3 -c 'import json; print(json.load(open("mobile/native/ios/build/macos/runtime-paths.json"))["omnivoice.cpp"])')"
+          mobile/ios/scripts/check-swift.sh test --filter realOmniSavedVoice --no-parallel
+
   android-inference:
     runs-on: ubuntu-24.04
     timeout-minutes: 75

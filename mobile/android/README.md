@@ -488,10 +488,17 @@ images from `electron/.../home/contributors` into the APK assets, nothing is fet
 
 
 Speech lists all seven phone speech engines independently of the selected voice.
-Pocket TTS and ZipVoice require a saved voice and show guidance until one is
+OmniVoice, Pocket TTS and ZipVoice require a saved voice and show guidance until one is
 selected. Choosing a preset-only engine clears an incompatible reference;
-OmniVoice also offers neutral design without a saved reference. Voice Design
+Voice Design remains a separate explicit task. It
 shows only OmniVoice. The shared catalogue pins all component files, including
 ZipVoice's separate vocoder and bundled lexicon; every file is size/hash checked.
 Downloads and licence review remain explicit. See the shared contract for the
 conversion-specific licence restrictions.
+
+OmniVoice Speech requires a saved voice and rejects bare synthesis before model
+loading; it cannot silently route to voice design. The shared pack uses the Q8_0
+base and native F32 codec (1.4 GB, 8 GB RAM), retaining the stable legacy model
+identifier and existing licence acceptance. Models downloads the replacement
+files explicitly; previous recordings and files are preserved. Native speech
+validation checks recognizable words and rejects repetitions.

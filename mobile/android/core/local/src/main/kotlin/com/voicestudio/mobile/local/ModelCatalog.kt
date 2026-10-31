@@ -47,7 +47,7 @@ val ModelLicence.review: LicenceReview get() {
     @SerialName("min_ram_gb") val minRamGb: Double, val licence: ModelLicence, val config: JsonObject = JsonObject(emptyMap()), val name: String = "") {
     val supportsSpeech get()=capability=="tts"||capability=="clone"
     val supportsCloning get()=capability=="clone"
-    val requiresReference get()=capability=="clone"&&!supportsDesign
+    val requiresReference get()=capability=="clone"
     val supportsDesign get()=runtime=="omnivoice.cpp"
     fun supports(value:String)=when(value) {"tts"->supportsSpeech;"clone"->supportsCloning;else->capability==value}
     val gated: Boolean get() = licence.category != "commercial-ok" || licence.requiresAcceptance

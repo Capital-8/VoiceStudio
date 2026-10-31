@@ -214,17 +214,18 @@ even if you edit the next script while synthesis is running.
 | ZipVoice (English / Chinese) | Speech with a saved voice and transcript | 187 MB | 3 GB |
 | Whisper tiny / base | Transcription, dubbing | 100–160 MB | 2–3 GB |
 | Zipformer | Live dictation (English) | 44 MB | 2 GB |
-| OmniVoice | Speech, voice cloning, voice design, dubbing | 660 MB | 6 GB |
+| OmniVoice (Q8 / F32 codec) | Speech with a saved voice, voice design, dubbing | 1.4 GB | 8 GB |
 | Qwen3 1.7B | Dub translation | 1.1 GB | 6 GB |
 
 Some models ask you to accept their licence first (for example OmniVoice is
 for non-commercial use), the same as on the desktop. Models your phone can't
 run are shown greyed out with the reason.
 
-Speech's model picker shows all seven speech engines before installation. Pocket
+Speech's model picker shows all seven speech engines before installation. OmniVoice, Pocket
 TTS and ZipVoice need a saved voice; import one from Gallery or create one in
 Voices. Their Generate action stays unavailable until a reference is selected.
-OmniVoice can also generate with a neutral designed voice. Choosing a preset-only
+Create a designed voice in Voice Design, save it, then select it in Speech.
+Choosing a preset-only
 engine clears an incompatible saved voice. Selecting a model starts no download.
 Pocket's conversion has conflicting licence statements and is treated as
 non-commercial; Piper's training-data rights remain unresolved. Review the exact
@@ -408,3 +409,10 @@ version codes do not make builds with different signing keys interchangeable.
 Android keeps a failed computer dubbing job visible while you stay on the Dub
 screen. Worker updates do not dismiss the error, and reopening the screen does
 not repeat an error already shown.
+
+OmniVoice's phone pack uses a Q8_0 language model and full-precision F32 audio
+codec. Earlier Q4 files are kept in the model folder, but the updated pack needs
+its new files downloaded from Models. Existing voice recordings, generated clips
+and licence acceptance are preserved. Speech requires a saved reference; it no
+longer invokes reference-free voice design, which could return noise for short
+text such as “Hi hello”.

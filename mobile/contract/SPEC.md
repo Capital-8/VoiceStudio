@@ -215,16 +215,21 @@ All tabs work without pairing once on-device models are installed (see M2); the 
   one follows `docs/licensing/model-review-workflow.md`. The contract test fails
   on drift, on a missing registry entry, or on a file without a checksum.
 - Speech offers KittenTTS mini, Kokoro multi-language, Piper Lessac, Supertonic 3,
-  Pocket TTS, ZipVoice and OmniVoice-GGUF `Q4_K_M`. Piper/Supertonic use preset
+  Pocket TTS, ZipVoice and OmniVoice-GGUF (Q8_0 base / F32 codec). Piper/Supertonic use preset
   voices; Pocket/ZipVoice require a saved reference (ZipVoice also uses its
-  transcript); OmniVoice supports both saved-reference cloning and neutral voice
-  design. Reference-only models show guidance and disable Generate until a saved
+  transcript). OmniVoice also requires a saved reference in Speech; Voice Design
+  is a separate explicit task. Reference-only models show guidance and disable Generate until a saved
   voice is selected. Model selection is independent of voice selection; choosing
   a preset-only engine clears an incompatible saved voice. Voice Design lists
   only engines that actually support design. Nothing is downloaded by selecting
   a model. Licence review and explicit installation still apply to every pack.
   Whisper tiny/base and streaming Zipformer provide dictation, and a small
   instruct LLM provides translation.
+- OmniVoice uses the runtime author recommended Q8_0 base and native F32 codec
+  (about 1.4 GB; minimum 8 GB RAM). The legacy `omnivoice-q4-k-m` identifier
+  remains stable for preferences and storage. Older Q4 files are retained; use
+  Models to download the new verified files. Licence terms/fingerprints are
+  unchanged. Bare Speech synthesis cannot silently fall back to voice design.
 - Model files normally resolve from their repository's fixed revision. Separate
   components may specify an allowlisted HTTPS `url` (fixed HF revision or the
   k2-fsa sherpa-onnx ONNX release assets), or a safe `bundled` path relative to the

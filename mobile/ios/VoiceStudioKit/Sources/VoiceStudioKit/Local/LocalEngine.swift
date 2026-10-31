@@ -232,8 +232,7 @@ public actor NativeLocalEngine: LocalEngine {
         return result
     }
     public func synthesize(model: PhoneModel, text: String, speaker: Int = 0, speed: Float = 1, progress: @escaping EngineProgressHandler = { _ in }) async throws -> LocalAudio {
-        if model.supportsDesign { return try await design(model: model,text: text,instruction: "",seed: 42,progress: progress) }
-        guard !model.requiresReference else { throw ClientError("mobile.local.model_incompatible") }
+        guard !model.requiresReference else { throw ClientError("mobile.speak.reference_required") }
 
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, speaker >= 0, speaker <= Int(Int32.max), speed.isFinite, speed > 0, speed <= 4, speaker < Int(model.config["num_speakers"]?.number ?? 1) else { throw ClientError("mobile.local.model_incompatible") }
         return try await execute(model, capability: .tts, progress: progress) { m, root, library, token in

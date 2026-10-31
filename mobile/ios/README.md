@@ -251,8 +251,8 @@ end-of-file replay passed, and the saved WAV retained its synthetic marker.
 Community design/cloning inference still needs its separate model setup.
 
 Speech exposes all seven phone speech engines in its Models picker. Preset engines
-can generate without a saved voice; Pocket TTS and ZipVoice require a saved voice,
-and OmniVoice can use either a saved reference or neutral voice design. Selecting
+can generate without a saved voice; OmniVoice, Pocket TTS and ZipVoice require a
+saved reference. Voice Design stays a separate explicit task. Selecting
 a preset-only engine clears an incompatible reference. Downloads stay explicit
 and licence-gated; no user test recordings ship with the model packs. ZipVoice's
 vocoder, pronunciation data and lexicon are size/hash verified with its weights.
@@ -263,3 +263,13 @@ For the four new packs, explicitly prepare fixtures with
 Run `realSpeechModelsProduceMarkedAudioOffline` with `VOICESTUDIO_REAL_SPEECH=1`,
 `SHERPA_ONNX_LIBRARY` pointing to the pinned macOS runtime. The tests generate
 their own Piper reference and decode it to 24 kHz for cloning. These fixture receipts never accept terms in the phone app.
+
+OmniVoice Speech never falls back to bare voice design when a reference is
+missing. That path produced non-speech for the short “Hi hello” repro on both the
+phone and CPU. The phone pack now uses Q8_0 base / F32 codec (1.4 GB; 8 GB RAM).
+Its legacy catalogue identifier remains stable; previous model files, voice data
+and licence acceptance are preserved. The native regression runs actual saved-
+voice generation through Whisper and rejects missing or repeated words, beyond
+checking only PCM energy. Use `--omni-speech` with the fixture fetcher to prepare
+the pack and `VOICESTUDIO_REAL_OMNI_SPEECH=1` with both native libraries to run
+`realOmniSavedVoiceSpeechIsRecognizableWithoutRepeats`.

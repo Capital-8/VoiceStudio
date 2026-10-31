@@ -10,7 +10,7 @@ final class PhoneScreens: XCTestCase {
             let option = app.buttons.matching(NSPredicate(format: "label == %@", name)).firstMatch
             app.reveal(option); XCTAssertTrue(option.exists)
         }
-        let pocket = app.buttons["choice.option.pocket-tts-int8-en"]; app.reveal(pocket); pocket.tap()
+        let omni = app.buttons["choice.option.omnivoice-q4-k-m"]; app.reveal(omni, swipingDown: true); omni.tap()
         XCTAssertTrue(app.staticTexts["Choose a saved voice to use this model. You can import one from Gallery."].exists)
         XCTAssertEqual(app.buttons["Voice"].value as? String, "Choose a voice")
         XCTAssertTrue(app.buttons["models.get"].exists)

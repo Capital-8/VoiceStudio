@@ -86,7 +86,7 @@ public struct PhoneModel: Codable, Identifiable, Sendable {
     }
     public var supportsSpeech: Bool { capability == .tts || capability == .clone }
     public var supportsCloning: Bool { capability == .clone }
-    public var requiresReference: Bool { capability == .clone && !supportsDesign }
+    public var requiresReference: Bool { capability == .clone }
     public var supportsDesign: Bool { runtime == .omni }
     public func supports(_ value: ModelCapability) -> Bool {
         value == .tts ? supportsSpeech : value == .clone ? supportsCloning : capability == value
