@@ -245,6 +245,13 @@ jobs:
       - name: Fetch additional Speech models
         run: python3 mobile/ios/scripts/fetch-smoke-models.py --accept-test-licences --speech-models
 
+      # VSNative uses __has_include: preparing headers after its first compile
+      # leaves cached no-runtime stubs even though the dylibs now exist.
+      - name: Prepare all host runtimes before Swift compilation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: mobile/native/ios/build.sh macos-runtimes
+
       - name: Real TTS -> ASR
         env:
           # Native source metadata uses the same read-only API token as iOS builds.
@@ -265,7 +272,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          mobile/native/ios/build.sh macos-runtimes
           export VOICESTUDIO_REAL_OMNI_SPEECH=1
           SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
           export SHERPA_ONNX_LIBRARY
