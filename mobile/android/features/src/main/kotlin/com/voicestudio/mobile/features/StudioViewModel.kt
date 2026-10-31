@@ -168,6 +168,7 @@ class StudioViewModel @JvmOverloads constructor(application: Application, val st
                 val profile=current.clone(name,file)
                 currentCoroutineContext().ensureActive()
                 if(api!==current) return@run
+                if(!hasConsent()) {clonePending=false;return@run}
                 mutable.update {it.copy(profiles=it.profiles.filterNot {saved -> saved.id==profile.id}+profile)}
                 file.delete()
                 clonePending=false

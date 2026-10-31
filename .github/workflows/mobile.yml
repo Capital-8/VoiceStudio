@@ -254,7 +254,8 @@ jobs:
       - name: Real Speech preset and reference models
         run: |
           export VOICESTUDIO_REAL_SPEECH=1
-          export SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
+          SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
+          export SHERPA_ONNX_LIBRARY
           mobile/ios/scripts/check-swift.sh test --filter realSpeechModels --no-parallel
 
       - name: Fetch OmniVoice saved-voice Speech pack
@@ -266,8 +267,10 @@ jobs:
         run: |
           mobile/native/ios/build.sh macos-runtimes
           export VOICESTUDIO_REAL_OMNI_SPEECH=1
-          export SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
-          export OMNIVOICE_LIBRARY="$(python3 -c 'import json; print(json.load(open("mobile/native/ios/build/macos/runtime-paths.json"))["omnivoice.cpp"])')"
+          SHERPA_ONNX_LIBRARY="$(cat mobile/native/ios/build/macos/sherpa-path.txt)"
+          export SHERPA_ONNX_LIBRARY
+          OMNIVOICE_LIBRARY="$(python3 -c 'import json; print(json.load(open("mobile/native/ios/build/macos/runtime-paths.json"))["omnivoice.cpp"])')"
+          export OMNIVOICE_LIBRARY
           mobile/ios/scripts/check-swift.sh test --filter realOmniSavedVoice --no-parallel
 
   android-inference:

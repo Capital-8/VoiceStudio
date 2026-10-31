@@ -56,14 +56,21 @@ def valid_asset_url(url: str) -> bool:
     from urllib.parse import urlparse
     if not isinstance(url, str):
         return False
-    u=urlparse(url)
-    if u.scheme == "https" and u.hostname == "huggingface.co" and not u.username and not u.password and u.port is None and not u.query and not u.fragment:
-        parts=u.path.strip("/").split("/")
-        return len(parts)>=5 and REPO.fullmatch("/".join(parts[:2])) is not None and parts[2]=="resolve" and REVISION.fullmatch(parts[3]) is not None and safe_file("/".join(parts[4:]))
-    return (u.scheme == "https" and u.hostname == "github.com" and not u.username and not u.password
-            and u.port is None and not u.query and not u.fragment
-            and u.path.startswith("/k2-fsa/sherpa-onnx/releases/download/")
-            and ".." not in u.path.split("/") and u.path.endswith(".onnx"))
+    try:
+        u = urlparse(url)
+        if u.scheme != "https" or u.username or u.password or u.port is not None or u.query or u.fragment:
+            return False
+    except ValueError:
+        return False
+    parts = u.path.strip("/").split("/")
+    if not all(part not in {".", ".."} and re.fullmatch(r"[A-Za-z0-9_.-]+", part) for part in parts):
+        return False
+    if u.hostname == "huggingface.co":
+        return (len(parts) >= 5 and REPO.fullmatch("/".join(parts[:2])) is not None
+                and parts[2] == "resolve" and REVISION.fullmatch(parts[3]) is not None)
+    return (u.hostname == "github.com" and len(parts) == 6
+            and parts[:4] == ["k2-fsa", "sherpa-onnx", "releases", "download"]
+            and parts[-1].endswith(".onnx"))
 
 def read_json(path: Path) -> dict[str, Any]:
     def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:

@@ -715,6 +715,7 @@ func realSpeechModelsProduceMarkedAudioOffline(id: String) async throws {
     let wave = try audio.markSynthetic()
     #expect(wave.range(of: Data("VoiceStudio synthetic audio".utf8)) != nil)
     let output = repository.appendingPathComponent("mobile/ios/.generated/" + id + "-speech.wav")
+    try FileManager.default.createDirectory(at: output.deletingLastPathComponent(), withIntermediateDirectories: true)
     try wave.write(to: output)
     print("Speech inference \(id): \(Double(audio.samples.count)/Double(audio.sampleRate)) seconds at \(audio.sampleRate) Hz")
 }

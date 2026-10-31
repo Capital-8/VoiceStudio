@@ -93,6 +93,32 @@ class HostSwitchRegressionTest {
             assertFalse(vm.state.value.canRetry)
         } finally {sample.delete()}
     }
+    @Test fun withdrawnConsentCannotPublishAnInflightComputerClone()=runBlocking {
+        vm.connect(a.url("/").toString(),"","");awaitIdle()
+        val original=a.dispatcher
+        val started=java.util.concurrent.CountDownLatch(1)
+        val release=java.util.concurrent.CountDownLatch(1)
+        a.dispatcher=object:Dispatcher() {
+            override fun dispatch(request:RecordedRequest):MockResponse =
+                if(request.path=="/profiles"&&request.method=="POST") {
+                    started.countDown();release.await(10,TimeUnit.SECONDS)
+                    MockResponse().setBody("""{"id":"withdrawn-voice","name":"Withdrawn clone"}""")
+                } else original.dispatch(request)
+        }
+        val sample=java.io.File.createTempFile("withdrawn-clone-",".wav",vm.getApplication<Application>().cacheDir)
+        sample.writeText("RIFF test fixture")
+        var consent=true
+        var completed=0
+        try {
+            vm.clone("Withdrawn clone",sample,hasConsent={consent}) {completed++}
+            withTimeout(15000) {while(started.count>0) {shadowOf(Looper.getMainLooper()).idle();delay(10)}}
+            consent=false;release.countDown();awaitIdle()
+            assertEquals(0,completed)
+            assertTrue(sample.exists())
+            assertTrue(vm.state.value.profiles.none {it.id=="withdrawn-voice"})
+            assertFalse(vm.state.value.canRetry)
+        } finally {release.countDown();sample.delete()}
+    }
     @Test fun cancelledComputerCloneCannotCompleteOrNavigateLater()=runBlocking {
         vm.connect(a.url("/").toString(),"","");awaitIdle()
         val original=a.dispatcher
@@ -193,6 +219,8 @@ class HostSwitchRegressionTest {
             }
         }
         compose.onNodeWithText("Imported gallery voice").assertExists()
+        shadowOf(Looper.getMainLooper()).idle();vm.store.update {it}
+        assertEquals("A phone-voice entry must not overwrite the remembered task preference","computer",vm.preferences.value.runLocations["speak"])
         compose.onNodeWithText("Computer").performClick()
         compose.onNodeWithText("Imported gallery voice").assertDoesNotExist()
         restoration.emulateSavedInstanceStateRestore();compose.waitForIdle()
