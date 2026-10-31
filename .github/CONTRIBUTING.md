@@ -429,7 +429,8 @@ still works. Mixed changes, workflow/build configuration, dependencies and bundl
 app icons still run their normal checks; unknown or truncated change lists run
 all checks. Manual runs and scheduled audits remain full runs. CLA, commit identity
 and secret scanning still run. Run changed tests locally before submitting a
-test-only PR.
+test-only PR. Docker Hub overview edits still publish through the small
+`dockerhub-description.yml` workflow without rebuilding images.
 
 - **Gallery pin:** a PR that changes the `omnivoice-gallery` submodule must
   move it forward along the gallery's `main` (`.github/workflows/gallery-pin.yml`).
