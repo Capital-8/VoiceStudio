@@ -45,7 +45,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Changed runtime paths
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      runtime: ${{ steps.scope.outputs.runtime }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/ci_scope.py
+
   android:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.runtime != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
@@ -98,6 +118,8 @@ jobs:
           retention-days: 7
 
   ios:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.runtime != 'false' }}
     # Same SDK as the TestFlight upload, so App Store toolchain breaks show up here first.
     runs-on: macos-26
     # Cold simulator/device compilation can exhaust an hour after tests pass.
@@ -222,6 +244,8 @@ jobs:
   # native code the phones run. Models are user-started downloads in the app;
   # here they are fetched for the test with its explicit test-licence flag.
   ios-inference:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.runtime != 'false' }}
     # Standard Intel runners have 14 GB RAM; standard ARM runners have 7 GB.
     # The verified OmniVoice pack requires 8 GB, including inference headroom.
     runs-on: macos-15-intel
@@ -280,6 +304,8 @@ jobs:
           mobile/ios/scripts/check-swift.sh test --filter realOmniSavedVoice --no-parallel
 
   android-inference:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.runtime != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     defaults:
@@ -329,7 +355,8 @@ jobs:
   # phone-first, smallest speech model, English. Nexus 5X is 1080x1920, inside
   # Play's 2:1 limit. Pulled from the emulator as the android-play-screenshots artifact.
   android-screenshots:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && needs.changes.outputs.runtime != 'false' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     defaults:
