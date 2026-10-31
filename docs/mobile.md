@@ -42,7 +42,7 @@ Electron and Android.
 
 ## What you can do
 
-- **Speak**: type text, pick a voice and language, generate, play, share.
+- **Speech**: type text, pick a voice and language, generate, play, share.
   Switching between the phone and computer keeps your script.
 - **Voices**: clone a voice from a recording or an audio file. Voices you
   clone on the phone stay on the phone.
@@ -50,6 +50,8 @@ Electron and Android.
   OmniVoice generates the cloned preview. Both models must be installed. Saving
   publishes a voice only after that preview succeeds; playback plays the clone,
   while the original recording stays separate for reference conditioning.
+  Withdrawing voice consent cancels cloning on the phone or computer; the form
+  stays open so you can review it before trying again.
 - **Dub**: pick a video or audio file and target languages; the phone
   transcribes, translates and re-voices it in the original speaker's voice.
   Play completed dubs directly in the app, including after using Dictate;
@@ -247,7 +249,7 @@ Plain `http://` works only for addresses on your own network (home Wi-Fi,
 
 ## Report a result
 
-Every generated result (a Speak take, a cloned voice, a finished dub) has a
+Every generated result (a Speech take, a cloned voice, a finished dub) has a
 **Report** action. Pick what's wrong, optionally add a note or the text you
 typed, and tap **Send report**. It sends only the reason, your note, that text
 if you ticked it, the app version and the model that made the result to the

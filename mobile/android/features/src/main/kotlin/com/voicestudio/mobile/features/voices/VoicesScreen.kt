@@ -86,7 +86,7 @@ import java.io.File
         }
         Field("mobile.voices.name_label",name,{name=it.take(200)})
         Info("mobile.voices.consent_title","mobile.voices.consent_body")
-        ConsentCheck("mobile.simple.voice_consent",permission,{permission=it;if(!it) vm.cancelClone()})
+        ConsentCheck("mobile.simple.voice_consent",permission,{permission=it;if(!it) {vm.phone.cancelInference();vm.cancelClone()}})
         Secondary("mobile.voices.pick_file",!recording) {pick.launch(arrayOf("audio/*"))}
         if(recording) {
             Text(tr("mobile.voices.recording",mapOf("seconds" to seconds)))
