@@ -14886,6 +14886,208 @@
     ]
    }
   },
+  "/elevenlabs/v1/history": {
+   "get": {
+    "description": "Takes generated in the app (Generate, Stories and the other pages that\nsave to history), newest first.",
+    "operationId": "list_history_elevenlabs_v1_history_get",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "page_size",
+      "required": false,
+      "schema": {
+       "default": 100,
+       "maximum": 1000,
+       "minimum": 1,
+       "title": "Page Size",
+       "type": "integer"
+      }
+     },
+     {
+      "in": "query",
+      "name": "start_after_history_item_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Start After History Item Id"
+      }
+     },
+     {
+      "in": "query",
+      "name": "voice_id",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Voice Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "List History",
+    "tags": [
+     "ElevenLabs-Compatible API",
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/history/{history_item_id}": {
+   "delete": {
+    "description": "Delete a take (administrator access, as in the app).",
+    "operationId": "delete_history_item_elevenlabs_v1_history__history_item_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "history_item_id",
+      "required": true,
+      "schema": {
+       "title": "History Item Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Delete History Item",
+    "tags": [
+     "ElevenLabs-Compatible API",
+     "ElevenLabs-Compatible API"
+    ]
+   },
+   "get": {
+    "operationId": "get_history_item_elevenlabs_v1_history__history_item_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "history_item_id",
+      "required": true,
+      "schema": {
+       "title": "History Item Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get History Item",
+    "tags": [
+     "ElevenLabs-Compatible API",
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/history/{history_item_id}/audio": {
+   "get": {
+    "operationId": "get_history_audio_elevenlabs_v1_history__history_item_id__audio_get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "history_item_id",
+      "required": true,
+      "schema": {
+       "title": "History Item Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       }
+      },
+      "description": "The take as WAV."
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get History Audio",
+    "tags": [
+     "ElevenLabs-Compatible API",
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
   "/elevenlabs/v1/models": {
    "get": {
     "description": "ElevenLabs model aliases (served by the active engine) plus every\ninstalled VoiceStudio engine.",

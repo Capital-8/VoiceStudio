@@ -603,3 +603,62 @@ def test_stream_input_speaks_each_sentence_then_finishes(client, engine):
 def test_stream_input_rejects_a_bad_format(client):
     with client.websocket_connect("/elevenlabs/v1/text-to-speech/default/stream-input?output_format=flac_1") as ws:
         assert ws.receive_json()["error"] == "invalid_output_format"
+
+
+@pytest.fixture()
+def history(profile):
+    """Three takes in generation history (two by the profile), plus one whose
+    audio is gone."""
+    import soundfile as sf
+    from core.config import OUTPUTS_DIR
+    from core.db import db_conn
+
+    pid, _ = profile
+    os.makedirs(OUTPUTS_DIR, exist_ok=True)
+    ids, files = [], []
+    with db_conn() as conn:
+        for i, (voice, has_audio) in enumerate([(pid, True), (None, True), (pid, True), (pid, False)]):
+            hid = f"el-h-{uuid.uuid4().hex[:8]}"
+            name = f"{hid}.wav"
+            if has_audio:
+                sf.write(os.path.join(OUTPUTS_DIR, name), np.zeros(240, dtype=np.float32), 24000)
+                files.append(os.path.join(OUTPUTS_DIR, name))
+            conn.execute(
+                "INSERT INTO generation_history (id, text, mode, profile_id, audio_path, created_at) "
+                "VALUES (?, ?, 'clone', ?, ?, ?)",
+                (hid, f"take {i}", voice, name, 4_000_000_000 + i),
+            )
+            ids.append(hid)
+    yield ids
+    with db_conn() as conn:
+        conn.executemany("DELETE FROM generation_history WHERE id=?", [(i,) for i in ids])
+    for f in files:
+        if os.path.exists(f):
+            os.unlink(f)
+
+
+def test_history_lists_pages_and_serves_takes(client, monkeypatch, profile, history):
+    pid, name = profile
+    first, second, third, gone = history
+    page = client.get("/elevenlabs/v1/history", params={"page_size": 2}).json()
+    newest = [item["history_item_id"] for item in page["history"]]
+    assert newest == [third, second] and page["has_more"] is True
+    assert gone not in newest  # audio missing on disk
+
+    rest = client.get("/elevenlabs/v1/history", params={
+        "page_size": 2, "start_after_history_item_id": page["last_history_item_id"]}).json()
+    assert rest["history"][0]["history_item_id"] == first
+
+    mine = client.get("/elevenlabs/v1/history", params={"voice_id": pid}).json()["history"]
+    assert [item["history_item_id"] for item in mine][:2] == [third, first]
+    assert mine[0]["voice_name"] == name and mine[0]["text"] == "take 2"
+
+    audio = client.get(f"/elevenlabs/v1/history/{third}/audio")
+    assert audio.status_code == 200 and audio.content[:4] == b"RIFF"
+    assert client.get(f"/elevenlabs/v1/history/{gone}").status_code == 404
+
+    gen = importlib.import_module("api.routers.generation")
+    deleted = []
+    monkeypatch.setattr(gen, "delete_single_history", lambda hid: deleted.append(hid))
+    assert client.delete(f"/elevenlabs/v1/history/{third}").status_code == 200
+    assert deleted == [third]

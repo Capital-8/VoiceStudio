@@ -11,8 +11,8 @@ Supported: text to speech (``/v1/text-to-speech/{voice_id}``, ``/stream``,
 ``/with-timestamps`` and the ``/stream-input`` WebSocket, every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
 voice changer (``/v1/speech-to-speech/{voice_id}``), sound effects
 (``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``),
-multi-voice dialogue (``/v1/text-to-dialogue``), dubbing (``/v1/dubbing``), the
-voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
+multi-voice dialogue (``/v1/text-to-dialogue``), dubbing (``/v1/dubbing``),
+history (``/v1/history``), the voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
 voice settings and the model list. ElevenLabs model ids (``eleven_*``) use the
 active VoiceStudio engine; a VoiceStudio engine id picks that engine.
 
@@ -1299,6 +1299,115 @@ def delete_dubbing(dubbing_id: str):
 
     _dub_job(dubbing_id)
     delete_batch_job(dubbing_id)
+    return {"status": "ok"}
+
+
+# ── History ─────────────────────────────────────────────────────────────────
+
+
+def _history_rows(voice_id: Optional[str] = None) -> list:
+    """Generation-history rows whose audio still exists, newest first, with
+    their voice's name."""
+    import os
+
+    from api.routers.generation import _safe_output_path
+    from core.db import db_conn
+
+    query = (
+        "SELECT h.*, p.name AS voice_name FROM generation_history h "
+        "LEFT JOIN voice_profiles p ON p.id = h.profile_id "
+        + ("WHERE h.profile_id = ? " if voice_id else "")
+        + "ORDER BY h.created_at DESC, h.id"
+    )
+    with db_conn() as conn:
+        rows = conn.execute(query, (voice_id,) if voice_id else ()).fetchall()
+    alive = []
+    for row in rows:
+        path = _safe_output_path(row["audio_path"]) if row["audio_path"] else None
+        if path and os.path.exists(path):
+            alive.append(row)
+    return alive
+
+
+def _history_item(row) -> dict:
+    text = row["text"] or ""
+    return {
+        "history_item_id": row["id"],
+        "request_id": None,
+        "voice_id": row["profile_id"],
+        "voice_name": row["voice_name"],
+        "voice_category": "cloned" if row["profile_id"] else None,
+        "model_id": None,
+        "text": text,
+        "date_unix": int(row["created_at"] or 0),
+        "character_count_change_from": 0,
+        "character_count_change_to": len(text),
+        "content_type": "audio/wav",
+        "state": "created",
+        "settings": None,
+        "feedback": None,
+        "share_link_id": None,
+        "source": "TTS",
+    }
+
+
+def _history_row(history_item_id: str):
+    for row in _history_rows():
+        if row["id"] == history_item_id:
+            return row
+    raise _error(404, "history_item_not_found", f"History item '{history_item_id}' was not found.")
+
+
+@_http.get("/v1/history")
+def list_history(
+    page_size: int = Query(default=100, ge=1, le=1000),
+    start_after_history_item_id: Optional[str] = Query(default=None),
+    voice_id: Optional[str] = Query(default=None),
+):
+    """Takes generated in the app (Generate, Stories and the other pages that
+    save to history), newest first."""
+    rows = _history_rows(voice_id)
+    start = 0
+    if start_after_history_item_id:
+        ids = [row["id"] for row in rows]
+        if start_after_history_item_id not in ids:
+            raise _error(422, "invalid_cursor", "start_after_history_item_id is not a history item.")
+        start = ids.index(start_after_history_item_id) + 1
+    page = rows[start:start + page_size]
+    return {
+        "history": [_history_item(row) for row in page],
+        "last_history_item_id": page[-1]["id"] if page else None,
+        "has_more": start + page_size < len(rows),
+    }
+
+
+@_http.get("/v1/history/{history_item_id}")
+def get_history_item(history_item_id: str):
+    return _history_item(_history_row(history_item_id))
+
+
+@_http.get(
+    "/v1/history/{history_item_id}/audio",
+    response_class=Response,
+    responses={200: {"description": "The take as WAV.",
+                     "content": {"audio/wav": {"schema": {"type": "string", "format": "binary"}}}}},
+)
+def get_history_audio(history_item_id: str):
+    from fastapi.responses import FileResponse
+
+    from api.routers.generation import _safe_output_path
+
+    row = _history_row(history_item_id)
+    return FileResponse(_safe_output_path(row["audio_path"]), media_type="audio/wav")
+
+
+@_http.delete("/v1/history/{history_item_id}", dependencies=[Depends(require_admin)])
+def delete_history_item(history_item_id: str):
+    """Delete a take (administrator access, as in the app)."""
+    from api.routers.generation import delete_single_history
+
+    _history_row(history_item_id)
+    delete_single_history(history_item_id)
     return {"status": "ok"}
 
 
