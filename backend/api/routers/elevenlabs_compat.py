@@ -32,7 +32,7 @@ from fastapi.routing import APIRoute
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from api.dependencies import require_consumer
+from api.dependencies import require_admin, require_consumer
 
 logger = logging.getLogger("omnivoice.elevenlabs_compat")
 
@@ -1032,3 +1032,58 @@ async def text_to_speech_stream_with_timestamps(
 
     return StreamingResponse(lines(), media_type="application/x-ndjson",
                              headers={"X-OmniVoice-Alignment": full.headers["x-omnivoice-alignment"]})
+
+
+# ── Voice cloning ───────────────────────────────────────────────────────────
+
+
+def _label_language(labels: Optional[str]) -> str:
+    """``labels`` is a JSON object string; its ``language`` becomes the
+    profile's language when given."""
+    if not labels:
+        return "Auto"
+    try:
+        parsed = json.loads(labels)
+    except ValueError:
+        raise _error(422, "invalid_labels", "labels must be a JSON object.")
+    if not isinstance(parsed, dict):
+        raise _error(422, "invalid_labels", "labels must be a JSON object.")
+    language = parsed.get("language")
+    return language.strip() if isinstance(language, str) and language.strip() else "Auto"
+
+
+@router.post("/v1/voices/add")
+async def add_voice(
+    name: str = Form(...),
+    files: list[UploadFile] = File(..., description="Recordings of the voice; the first is its reference."),
+    description: Optional[str] = Form(default=None, description="Accepted without effect."),
+    labels: Optional[str] = Form(default=None, description="JSON object; its 'language' sets the voice's language."),
+    remove_background_noise: bool = Form(default=False, description="Accepted without effect."),
+):
+    """Instant voice cloning: save a recording as a new voice profile, the
+    same as adding a cloned voice in the app. VoiceStudio clones from one
+    reference recording, the first file sent."""
+    from api.routers.profiles import create_profile
+
+    language = _label_language(labels)
+    profile = await create_profile(
+        name=name, ref_audio=files[0], ref_text="", instruct="", language=language,
+        seed=None, personality="", kind="clone", vd_states=None, design_recipe=None,
+        engine=None, image=None,
+    )
+    return {"voice_id": profile["id"], "requires_verification": False}
+
+
+@router.delete("/v1/voices/{voice_id}", dependencies=[Depends(require_admin)])
+async def delete_voice(voice_id: str):
+    """Delete a voice profile (administrator access, as in the app)."""
+    import asyncio
+
+    from api.routers.profiles import delete_profile
+
+    if voice_id == "default" or not _profile_exists(voice_id):
+        raise _error(404, "voice_not_found", f"Voice '{voice_id}' was not found.")
+    from api.routers.openai_compat import _resolve_voice_profile
+
+    await asyncio.to_thread(delete_profile, _resolve_voice_profile(voice_id)["id"])
+    return {"status": "ok"}

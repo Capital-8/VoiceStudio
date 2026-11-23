@@ -44,6 +44,8 @@ curl http://127.0.0.1:3900/elevenlabs/v1/text-to-speech/default?output_format=pc
 | `POST /v1/speech-to-text` | Uses the active speech-recognition engine; returns `words` with `spacing` items. `diarize=true` adds `speaker_id` to each word; if speaker identification can't run, the transcript comes back without labels and `X-OmniVoice-Diarization-Error` says why. |
 | `POST /v1/audio-isolation` | The voice from a recording, with music and background removed (Demucs, as in Dubbing). |
 | `GET /v1/voices`, `GET /v2/voices`, `GET /v1/voices/{voice_id}` | Your voice profiles (`cloned`) plus `default`, the active engine's own voice. |
+| `POST /v1/voices/add` | Instant voice cloning: saves the recording as a new cloned voice, as adding a voice in the app does, and returns its `voice_id`. VoiceStudio clones from one reference recording, the first file sent; `labels.language` sets the voice's language. |
+| `DELETE /v1/voices/{voice_id}` | Deletes a voice. Remote callers need the API key (administrator access), as in the app. |
 | `GET /v1/voices/settings/default`, `GET /v1/voices/{voice_id}/settings` | ElevenLabs' default values, for clients that read them first. |
 | `GET /v1/models` | The ElevenLabs model ids below, plus every installed VoiceStudio engine. |
 

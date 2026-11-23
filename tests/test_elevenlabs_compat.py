@@ -406,3 +406,46 @@ def test_with_timestamps_estimates_without_a_recognizer(client, engine, monkeypa
     line = _json.loads(res.content.decode().strip())
     ends = line["alignment"]["character_end_times_seconds"]
     assert len(ends) == 6 and ends[-1] == pytest.approx(SECONDS, abs=0.01)
+
+
+def test_add_voice_creates_a_clone_profile(client, monkeypatch):
+    pr = importlib.import_module("api.routers.profiles")
+    seen = {}
+
+    async def fake_create(**kw):
+        seen.update(kw)
+        seen["audio"] = await kw["ref_audio"].read()
+        return {"id": "new-profile"}
+
+    monkeypatch.setattr(pr, "create_profile", fake_create)
+    res = client.post("/elevenlabs/v1/voices/add",
+                      data={"name": "Narrator", "labels": '{"language": "en"}'},
+                      files=[("files", ("a.wav", b"first", "audio/wav")),
+                             ("files", ("b.wav", b"second", "audio/wav"))])
+    assert res.status_code == 200, res.text
+    assert res.json() == {"voice_id": "new-profile", "requires_verification": False}
+    assert seen["name"] == "Narrator" and seen["kind"] == "clone"
+    assert seen["language"] == "en" and seen["audio"] == b"first"
+
+    bad = client.post("/elevenlabs/v1/voices/add", data={"name": "X", "labels": "[1]"},
+                      files=[("files", ("a.wav", b"x", "audio/wav"))])
+    assert bad.status_code == 422 and bad.json()["detail"]["status"] == "invalid_labels"
+
+
+def test_delete_voice_removes_the_profile(client, monkeypatch, profile):
+    pr = importlib.import_module("api.routers.profiles")
+    deleted = []
+    monkeypatch.setattr(pr, "delete_profile", lambda pid: deleted.append(pid) or {"deleted": pid})
+    pid, name = profile
+    res = client.delete(f"/elevenlabs/v1/voices/{name}")
+    assert res.status_code == 200, res.text
+    assert deleted == [pid]
+    missing = client.delete("/elevenlabs/v1/voices/default")
+    assert missing.status_code == 404
+
+
+def test_deleting_a_voice_needs_administrator_access():
+    from api.routers.elevenlabs_compat import router
+
+    route = next(r for r in router.routes if r.path.endswith("/v1/voices/{voice_id}") and "DELETE" in r.methods)
+    assert any(getattr(d.dependency, "__name__", "") == "require_admin" for d in route.dependencies)

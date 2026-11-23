@@ -691,6 +691,59 @@
     "title": "AutoExtractRequest",
     "type": "object"
    },
+   "Body_add_voice_elevenlabs_v1_voices_add_post": {
+    "properties": {
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Accepted without effect.",
+      "title": "Description"
+     },
+     "files": {
+      "description": "Recordings of the voice; the first is its reference.",
+      "items": {
+       "contentMediaType": "application/octet-stream",
+       "type": "string"
+      },
+      "title": "Files",
+      "type": "array"
+     },
+     "labels": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "JSON object; its 'language' sets the voice's language.",
+      "title": "Labels"
+     },
+     "name": {
+      "title": "Name",
+      "type": "string"
+     },
+     "remove_background_noise": {
+      "default": false,
+      "description": "Accepted without effect.",
+      "title": "Remove Background Noise",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "name",
+     "files"
+    ],
+    "title": "Body_add_voice_elevenlabs_v1_voices_add_post",
+    "type": "object"
+   },
    "Body_audio_isolation_elevenlabs_v1_audio_isolation_post": {
     "properties": {
      "audio": {
@@ -15161,6 +15214,46 @@
     ]
    }
   },
+  "/elevenlabs/v1/voices/add": {
+   "post": {
+    "description": "Instant voice cloning: save a recording as a new voice profile, the\nsame as adding a cloned voice in the app. VoiceStudio clones from one\nreference recording, the first file sent.",
+    "operationId": "add_voice_elevenlabs_v1_voices_add_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_add_voice_elevenlabs_v1_voices_add_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Add Voice",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
   "/elevenlabs/v1/voices/settings/default": {
    "get": {
     "operationId": "default_voice_settings_elevenlabs_v1_voices_settings_default_get",
@@ -15181,6 +15274,45 @@
    }
   },
   "/elevenlabs/v1/voices/{voice_id}": {
+   "delete": {
+    "description": "Delete a voice profile (administrator access, as in the app).",
+    "operationId": "delete_voice_elevenlabs_v1_voices__voice_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "voice_id",
+      "required": true,
+      "schema": {
+       "title": "Voice Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Delete Voice",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   },
    "get": {
     "operationId": "get_voice_elevenlabs_v1_voices__voice_id__get",
     "parameters": [

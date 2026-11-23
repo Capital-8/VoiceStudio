@@ -8,6 +8,7 @@ DELETE /batch/jobs/{job_id}
 DELETE /calls/{call_id}
 DELETE /dub/history
 DELETE /dub/history/{history_id}
+DELETE /elevenlabs/v1/voices/{voice_id}
 DELETE /engines/sidecar/{engine_id}/install
 DELETE /engines/translation/{engine_id}
 DELETE /export/history/{export_id}
@@ -277,6 +278,7 @@ POST /elevenlabs/v1/text-to-speech/{voice_id}
 POST /elevenlabs/v1/text-to-speech/{voice_id}/stream
 POST /elevenlabs/v1/text-to-speech/{voice_id}/stream/with-timestamps
 POST /elevenlabs/v1/text-to-speech/{voice_id}/with-timestamps
+POST /elevenlabs/v1/voices/add
 POST /engines/audiocpp/runtime/install
 POST /engines/diarisation/select
 POST /engines/omnivoice-gguf/gpu-offer
