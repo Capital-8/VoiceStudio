@@ -8,6 +8,7 @@ DELETE /batch/jobs/{job_id}
 DELETE /calls/{call_id}
 DELETE /dub/history
 DELETE /dub/history/{history_id}
+DELETE /elevenlabs/v1/dubbing/{dubbing_id}
 DELETE /elevenlabs/v1/voices/{voice_id}
 DELETE /engines/sidecar/{engine_id}/install
 DELETE /engines/translation/{engine_id}
@@ -116,6 +117,8 @@ GET /dub/transcribe-stream/{job_id}
 GET /dub/txt/{job_id}
 GET /dub/vtt/{job_id}
 GET /dub/vtt/{job_id}/{filename}
+GET /elevenlabs/v1/dubbing/{dubbing_id}
+GET /elevenlabs/v1/dubbing/{dubbing_id}/audio/{language_code}
 GET /elevenlabs/v1/models
 GET /elevenlabs/v1/voices
 GET /elevenlabs/v1/voices/settings/default
@@ -269,6 +272,7 @@ POST /dub/upload
 POST /dub/use-downloaded-captions/{job_id}
 POST /dub/validate-srt
 POST /elevenlabs/v1/audio-isolation
+POST /elevenlabs/v1/dubbing
 POST /elevenlabs/v1/sound-generation
 POST /elevenlabs/v1/speech-to-speech/{voice_id}
 POST /elevenlabs/v1/speech-to-text

@@ -449,3 +449,43 @@ def test_deleting_a_voice_needs_administrator_access():
 
     route = next(r for r in router.routes if r.path.endswith("/v1/voices/{voice_id}") and "DELETE" in r.methods)
     assert any(getattr(d.dependency, "__name__", "") == "require_admin" for d in route.dependencies)
+
+
+def test_dubbing_runs_on_the_batch_queue(client, monkeypatch, tmp_path):
+    batch = importlib.import_module("api.routers.batch")
+    seen = {}
+
+    async def fake_enqueue(**kw):
+        seen.update(kw)
+        seen["video"] = await kw["video"].read()
+        return {"job_id": "dub123", "status": "queued", "queue_position": 1}
+
+    monkeypatch.setattr(batch, "enqueue_batch_job", fake_enqueue)
+    res = client.post("/elevenlabs/v1/dubbing", data={"target_lang": "es", "drop_background_audio": "true"},
+                      files={"file": ("clip.mp4", b"video", "video/mp4")})
+    assert res.status_code == 200, res.text
+    assert res.json()["dubbing_id"] == "dub123"
+    assert seen["langs"] == "es" and seen["preserve_bg"] is False and seen["video"] == b"video"
+
+    no_file = client.post("/elevenlabs/v1/dubbing", data={"target_lang": "es", "source_url": "https://x"})
+    assert no_file.status_code == 422 and no_file.json()["detail"]["status"] == "file_required"
+
+    output = tmp_path / "out.mp4"
+    output.write_bytes(b"dubbed-video")
+    job = {"id": "dub123", "status": "running", "filename": "clip.mp4", "langs": ["es"],
+           "outputs": {"es": str(output)}, "error": None}
+    monkeypatch.setitem(batch._jobs, "dub123", job)
+    status = client.get("/elevenlabs/v1/dubbing/dub123").json()
+    assert status == {"dubbing_id": "dub123", "name": "clip.mp4", "status": "dubbing",
+                      "target_languages": ["es"], "error": None}
+    early = client.get("/elevenlabs/v1/dubbing/dub123/audio/es")
+    assert early.status_code == 425 and early.json()["detail"]["status"] == "dubbing_not_ready"
+
+    job["status"] = "done"
+    assert client.get("/elevenlabs/v1/dubbing/dub123").json()["status"] == "dubbed"
+    done = client.get("/elevenlabs/v1/dubbing/dub123/audio/es")
+    assert done.status_code == 200 and done.content == b"dubbed-video"
+
+    job.update(status="failed", error="Translation failed")
+    assert client.get("/elevenlabs/v1/dubbing/dub123").json()["error"] == "Translation failed"
+    assert client.get("/elevenlabs/v1/dubbing/nope").status_code == 404

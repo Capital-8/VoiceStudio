@@ -11,7 +11,8 @@ Supported: text to speech (``/v1/text-to-speech/{voice_id}``, ``/stream`` and
 ``/with-timestamps``, every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
 voice changer (``/v1/speech-to-speech/{voice_id}``), sound effects
 (``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``),
-multi-voice dialogue (``/v1/text-to-dialogue``), the voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
+multi-voice dialogue (``/v1/text-to-dialogue``), dubbing (``/v1/dubbing``), the
+voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
 voice settings and the model list. ElevenLabs model ids (``eleven_*``) use the
 active VoiceStudio engine; a VoiceStudio engine id picks that engine.
 
@@ -1086,4 +1087,88 @@ async def delete_voice(voice_id: str):
     from api.routers.openai_compat import _resolve_voice_profile
 
     await asyncio.to_thread(delete_profile, _resolve_voice_profile(voice_id)["id"])
+    return {"status": "ok"}
+
+
+# ── Dubbing ─────────────────────────────────────────────────────────────────
+
+_DUB_STATUS = {"queued": "dubbing", "running": "dubbing", "done": "dubbed",
+               "failed": "failed", "cancelled": "failed"}
+
+
+def _dub_job(dubbing_id: str) -> dict:
+    from api.routers import batch
+
+    job = batch._jobs.get(dubbing_id)
+    if not job:
+        raise _error(404, "dubbing_not_found", f"Dubbing '{dubbing_id}' was not found.")
+    return job
+
+
+def _dub_record(job: dict) -> dict:
+    return {
+        "dubbing_id": job["id"],
+        "name": job.get("filename") or job["id"],
+        "status": _DUB_STATUS.get(job.get("status"), "dubbing"),
+        "target_languages": list(job.get("langs") or []),
+        "error": job.get("error") if job.get("status") in ("failed", "cancelled") else None,
+    }
+
+
+@router.post("/v1/dubbing")
+async def create_dubbing(
+    file: Optional[UploadFile] = File(default=None),
+    source_url: Optional[str] = Form(default=None),
+    target_lang: str = Form(...),
+    source_lang: str = Form(default="auto", description="Accepted; the source language is detected."),
+    name: Optional[str] = Form(default=None, description="Accepted; the file name is used."),
+    num_speakers: int = Form(default=0, description="Accepted without effect."),
+    watermark: bool = Form(default=False, description="Accepted; VoiceStudio always adds its AI watermark."),
+    drop_background_audio: bool = Form(default=False),
+):
+    """Dub a video into ``target_lang`` on the app's batch queue (Batch page).
+    Poll ``GET /v1/dubbing/{dubbing_id}`` until ``status`` is ``dubbed``, then
+    download it from ``/v1/dubbing/{dubbing_id}/audio/{target_lang}``."""
+    from api.routers.batch import enqueue_batch_job
+
+    if file is None:
+        raise _error(
+            422, "file_required",
+            "Upload the video as `file`. VoiceStudio does not download source_url "
+            "links itself; download the video first, or use the app's Dubbing page, "
+            "which can fetch links." if source_url else "Upload the video as `file`.",
+        )
+    queued = await enqueue_batch_job(
+        video=file, langs=target_lang, voice_id=None,
+        preserve_bg=not drop_background_audio, translation_provider=None,
+    )
+    return {"dubbing_id": queued["job_id"], "expected_duration_sec": 0}
+
+
+@router.get("/v1/dubbing/{dubbing_id}")
+def get_dubbing(dubbing_id: str):
+    return _dub_record(_dub_job(dubbing_id))
+
+
+@router.get("/v1/dubbing/{dubbing_id}/audio/{language_code}")
+def get_dubbed_file(dubbing_id: str, language_code: str):
+    """The dubbed video for ``language_code`` once ``status`` is ``dubbed``."""
+    from api.routers.batch import download_batch_output
+
+    job = _dub_job(dubbing_id)
+    if job.get("status") != "done":
+        raise _error(425 if job.get("status") in ("queued", "running") else 409,
+                     "dubbing_not_ready",
+                     f"Dubbing '{dubbing_id}' is {_dub_record(job)['status']}, not dubbed yet.")
+    return download_batch_output(dubbing_id, language_code)
+
+
+@router.delete("/v1/dubbing/{dubbing_id}", dependencies=[Depends(require_admin)])
+def delete_dubbing(dubbing_id: str):
+    """Delete a finished dubbing and its files (administrator access, as on
+    the Batch page). Cancel an active one in the app first."""
+    from api.routers.batch import delete_batch_job
+
+    _dub_job(dubbing_id)
+    delete_batch_job(dubbing_id)
     return {"status": "ok"}

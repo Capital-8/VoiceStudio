@@ -846,6 +846,77 @@
     "title": "Body_convert_speech_convert_post",
     "type": "object"
    },
+   "Body_create_dubbing_elevenlabs_v1_dubbing_post": {
+    "properties": {
+     "drop_background_audio": {
+      "default": false,
+      "title": "Drop Background Audio",
+      "type": "boolean"
+     },
+     "file": {
+      "anyOf": [
+       {
+        "contentMediaType": "application/octet-stream",
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "File"
+     },
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Accepted; the file name is used.",
+      "title": "Name"
+     },
+     "num_speakers": {
+      "default": 0,
+      "description": "Accepted without effect.",
+      "title": "Num Speakers",
+      "type": "integer"
+     },
+     "source_lang": {
+      "default": "auto",
+      "description": "Accepted; the source language is detected.",
+      "title": "Source Lang",
+      "type": "string"
+     },
+     "source_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Source Url"
+     },
+     "target_lang": {
+      "title": "Target Lang",
+      "type": "string"
+     },
+     "watermark": {
+      "default": false,
+      "description": "Accepted; VoiceStudio always adds its AI watermark.",
+      "title": "Watermark",
+      "type": "boolean"
+     }
+    },
+    "required": [
+     "target_lang"
+    ],
+    "title": "Body_create_dubbing_elevenlabs_v1_dubbing_post",
+    "type": "object"
+   },
    "Body_create_profile_profiles_post": {
     "properties": {
      "design_recipe": {
@@ -14600,6 +14671,175 @@
      }
     },
     "summary": "Audio Isolation",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/dubbing": {
+   "post": {
+    "description": "Dub a video into ``target_lang`` on the app's batch queue (Batch page).\nPoll ``GET /v1/dubbing/{dubbing_id}`` until ``status`` is ``dubbed``, then\ndownload it from ``/v1/dubbing/{dubbing_id}/audio/{target_lang}``.",
+    "operationId": "create_dubbing_elevenlabs_v1_dubbing_post",
+    "requestBody": {
+     "content": {
+      "multipart/form-data": {
+       "schema": {
+        "$ref": "#/components/schemas/Body_create_dubbing_elevenlabs_v1_dubbing_post"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Create Dubbing",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/dubbing/{dubbing_id}": {
+   "delete": {
+    "description": "Delete a finished dubbing and its files (administrator access, as on\nthe Batch page). Cancel an active one in the app first.",
+    "operationId": "delete_dubbing_elevenlabs_v1_dubbing__dubbing_id__delete",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "dubbing_id",
+      "required": true,
+      "schema": {
+       "title": "Dubbing Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Delete Dubbing",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   },
+   "get": {
+    "operationId": "get_dubbing_elevenlabs_v1_dubbing__dubbing_id__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "dubbing_id",
+      "required": true,
+      "schema": {
+       "title": "Dubbing Id",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Dubbing",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/dubbing/{dubbing_id}/audio/{language_code}": {
+   "get": {
+    "description": "The dubbed video for ``language_code`` once ``status`` is ``dubbed``.",
+    "operationId": "get_dubbed_file_elevenlabs_v1_dubbing__dubbing_id__audio__language_code__get",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "dubbing_id",
+      "required": true,
+      "schema": {
+       "title": "Dubbing Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "path",
+      "name": "language_code",
+      "required": true,
+      "schema": {
+       "title": "Language Code",
+       "type": "string"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Get Dubbed File",
     "tags": [
      "ElevenLabs-Compatible API"
     ]
