@@ -341,3 +341,30 @@ def test_sound_generation_returns_the_saved_effect(client, monkeypatch, saved_ta
     assert err.status_code == 409
     detail = err.json()["detail"]
     assert detail["status"] == "sfx_not_installed" and detail["message"] == "Install it."
+
+
+def test_text_to_dialogue_joins_each_voice_with_a_pause(client, engine, profile):
+    pid, _ = profile
+    res = client.post("/elevenlabs/v1/text-to-dialogue", params={"output_format": "pcm_24000"},
+                      json={"inputs": [{"text": "Hi.", "voice_id": "default"},
+                                       {"text": "Hello!", "voice_id": pid}],
+                            "model_id": "eleven_v3", "seed": 3})
+    assert res.status_code == 200, res.text
+    gap = int(24000 * _el()._TURN_GAP_S)
+    assert len(res.content) // 2 == 2 * int(24000 * SECONDS) + gap
+    first, second = engine.calls[-2:]
+    assert "ref_audio" not in first and second["ref_audio"].endswith(f"{pid}.wav")
+    assert first["seed"] == second["seed"] == 3
+
+    streamed = client.post("/elevenlabs/v1/text-to-dialogue/stream", params={"output_format": "pcm_24000"},
+                           json={"inputs": [{"text": "Hi.", "voice_id": "default"}]})
+    assert streamed.status_code == 200 and len(streamed.content) // 2 == int(24000 * SECONDS)
+
+
+def test_text_to_dialogue_checks_every_voice_first(client, engine):
+    res = client.post("/elevenlabs/v1/text-to-dialogue", params={"output_format": "pcm_24000"},
+                      json={"inputs": [{"text": "Hi.", "voice_id": "default"},
+                                       {"text": "Yo.", "voice_id": "21m00Tcm4TlvDq8ikWAM"}]})
+    assert res.status_code == 404
+    assert res.json()["detail"]["status"] == "voice_not_found"
+    assert engine.calls == []

@@ -2232,6 +2232,26 @@
     "title": "DeviceInfo",
     "type": "object"
    },
+   "DialogueInput": {
+    "properties": {
+     "text": {
+      "minLength": 1,
+      "title": "Text",
+      "type": "string"
+     },
+     "voice_id": {
+      "minLength": 1,
+      "title": "Voice Id",
+      "type": "string"
+     }
+    },
+    "required": [
+     "text",
+     "voice_id"
+    ],
+    "title": "DialogueInput",
+    "type": "object"
+   },
    "DiarisationSelection": {
     "properties": {
      "engine_id": {
@@ -5153,6 +5173,61 @@
      "idle_timeout_seconds"
     ],
     "title": "SystemInfoResponse",
+    "type": "object"
+   },
+   "TextToDialogueRequest": {
+    "additionalProperties": true,
+    "description": "ElevenLabs' text-to-dialogue body. ``settings`` and\n``pronunciation_dictionary_locators`` are accepted without effect.",
+    "properties": {
+     "inputs": {
+      "items": {
+       "$ref": "#/components/schemas/DialogueInput"
+      },
+      "maxItems": 50,
+      "minItems": 1,
+      "title": "Inputs",
+      "type": "array"
+     },
+     "language_code": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Language Code"
+     },
+     "model_id": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Model Id"
+     },
+     "seed": {
+      "anyOf": [
+       {
+        "maximum": 4294967295.0,
+        "minimum": 0.0,
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Seed"
+     }
+    },
+    "required": [
+     "inputs"
+    ],
+    "title": "TextToDialogueRequest",
     "type": "object"
    },
    "TextToSpeechRequest": {
@@ -14645,6 +14720,110 @@
      }
     },
     "summary": "Speech To Text",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/text-to-dialogue": {
+   "post": {
+    "description": "One recording of several voices taking turns, each line in its own\nvoice profile (or ``default`` / an engine preset).",
+    "operationId": "text_to_dialogue_elevenlabs_v1_text_to_dialogue_post",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "output_format",
+      "required": false,
+      "schema": {
+       "default": "mp3_44100_128",
+       "title": "Output Format",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextToDialogueRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Text To Dialogue",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/text-to-dialogue/stream": {
+   "post": {
+    "description": "The same recording, sent as one chunked response once it is rendered.",
+    "operationId": "text_to_dialogue_stream_elevenlabs_v1_text_to_dialogue_stream_post",
+    "parameters": [
+     {
+      "in": "query",
+      "name": "output_format",
+      "required": false,
+      "schema": {
+       "default": "mp3_44100_128",
+       "title": "Output Format",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextToDialogueRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Text To Dialogue Stream",
     "tags": [
      "ElevenLabs-Compatible API"
     ]

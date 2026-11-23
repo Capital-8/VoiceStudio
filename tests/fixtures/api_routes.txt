@@ -271,6 +271,8 @@ POST /elevenlabs/v1/audio-isolation
 POST /elevenlabs/v1/sound-generation
 POST /elevenlabs/v1/speech-to-speech/{voice_id}
 POST /elevenlabs/v1/speech-to-text
+POST /elevenlabs/v1/text-to-dialogue
+POST /elevenlabs/v1/text-to-dialogue/stream
 POST /elevenlabs/v1/text-to-speech/{voice_id}
 POST /elevenlabs/v1/text-to-speech/{voice_id}/stream
 POST /engines/audiocpp/runtime/install

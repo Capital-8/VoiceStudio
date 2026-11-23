@@ -10,8 +10,8 @@ exactly as they do on ``/v1/audio/speech``.
 Supported: text to speech (``/v1/text-to-speech/{voice_id}`` and ``/stream``,
 every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
 voice changer (``/v1/speech-to-speech/{voice_id}``), sound effects
-(``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``), the
-voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
+(``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``),
+multi-voice dialogue (``/v1/text-to-dialogue``), the voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
 voice settings and the model list. ElevenLabs model ids (``eleven_*``) use the
 active VoiceStudio engine; a VoiceStudio engine id picks that engine.
 
@@ -27,7 +27,7 @@ import re
 from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.routing import APIRoute
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -853,3 +853,93 @@ async def audio_isolation(
         _unlink(source)
         shutil.rmtree(workdir, ignore_errors=True)
     return await _tensor_response(data, sr, output_format)
+
+
+# ── Text to dialogue ────────────────────────────────────────────────────────
+
+#: Pause between two speakers' lines, after each line's edge silence is cut.
+_TURN_GAP_S = 0.25
+_MAX_DIALOGUE_INPUTS = 50
+
+
+class DialogueInput(BaseModel):
+    text: str = Field(..., min_length=1)
+    voice_id: str = Field(..., min_length=1)
+
+
+class TextToDialogueRequest(BaseModel):
+    """ElevenLabs' text-to-dialogue body. ``settings`` and
+    ``pronunciation_dictionary_locators`` are accepted without effect."""
+
+    inputs: list[DialogueInput] = Field(..., min_length=1, max_length=_MAX_DIALOGUE_INPUTS)
+    model_id: Optional[str] = None
+    language_code: Optional[str] = None
+    seed: Optional[int] = Field(default=None, ge=0, le=4294967295)
+
+    model_config = {"extra": "allow"}
+
+
+async def _dialogue_pcm(body: TextToDialogueRequest) -> bytes:
+    """Render each line in its voice and join them into one 24 kHz PCM take."""
+    import numpy as np
+    import torch
+
+    from services.chunked_tts import trim_edge_silence
+
+    total = sum(len(item.text) for item in body.inputs)
+    if total > 4096:
+        raise _error(
+            400, "text_too_long",
+            "A dialogue can have up to 4,096 characters in total. Split it into several requests.",
+        )
+    for item in body.inputs:
+        if _ELEVENLABS_VOICE_ID_RE.match(item.voice_id) and not _profile_exists(item.voice_id):
+            raise _error(
+                404, "voice_not_found",
+                f"Voice '{item.voice_id}' is not a VoiceStudio voice. List the voices with "
+                f"GET {ELEVENLABS_PREFIX}/v1/voices and use a voice_id from it.",
+            )
+    gap = np.zeros(int(_SOURCE_RATE * _TURN_GAP_S), dtype=np.float32)
+    parts: list = []
+    for item in body.inputs:
+        line = TextToSpeechRequest(text=item.text, model_id=body.model_id,
+                                   language_code=body.language_code, seed=body.seed)
+        resp = await _speech(item.voice_id, line, "pcm_24000", stream=False)
+        pcm = b"".join([chunk async for chunk in resp.body_iterator])
+        samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768.0
+        trimmed = trim_edge_silence(torch.from_numpy(samples), _SOURCE_RATE).numpy()
+        if parts:
+            parts.append(gap)
+        parts.append(trimmed)
+    return _to_int16(np.concatenate(parts)).astype("<i2").tobytes()
+
+
+@router.post("/v1/text-to-dialogue")
+async def text_to_dialogue(
+    body: TextToDialogueRequest,
+    output_format: str = Query(default="mp3_44100_128"),
+):
+    """One recording of several voices taking turns, each line in its own
+    voice profile (or ``default`` / an engine preset)."""
+    import numpy as np
+
+    await _ffmpeg_ready(output_format)
+    pcm = await _dialogue_pcm(body)
+    samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768.0
+    return await _tensor_response(samples.reshape(-1, 1), _SOURCE_RATE, output_format)
+
+
+@router.post("/v1/text-to-dialogue/stream")
+async def text_to_dialogue_stream(
+    body: TextToDialogueRequest,
+    output_format: str = Query(default="mp3_44100_128"),
+):
+    """The same recording, sent as one chunked response once it is rendered."""
+    resp = await text_to_dialogue(body, output_format)
+
+    async def chunks():
+        data = resp.body
+        for i in range(0, len(data), 64 * 1024):
+            yield data[i:i + 64 * 1024]
+
+    return StreamingResponse(chunks(), media_type=resp.media_type)

@@ -37,6 +37,7 @@ curl http://127.0.0.1:3900/elevenlabs/v1/text-to-speech/default?output_format=pc
 |---|---|
 | `POST /v1/text-to-speech/{voice_id}` | Whole file. |
 | `POST /v1/text-to-speech/{voice_id}/stream` | PCM, μ-law and A-law stream sentence by sentence, or chunk by chunk on engines with native streaming. |
+| `POST /v1/text-to-dialogue` and `/stream` | Several voices taking turns in one recording: each line is spoken in its `voice_id`, with a short pause between lines. Up to 50 lines and 4,096 characters in total. |
 | `POST /v1/speech-to-speech/{voice_id}` | Voice changer: says the uploaded speech in a voice profile's voice, keeping its timing and intonation (the app's Convert → Keep my delivery). Without a voice-conversion engine it transcribes and re-speaks the clip instead and sets `X-OmniVoice-Fallback: respoken`. |
 | `POST /v1/sound-generation` | Sound effects from a description; needs Tools → Sound effects installed. `prompt_influence` and `loop` are accepted without effect. |
 | `POST /v1/speech-to-text` | Uses the active speech-recognition engine; returns `words` with `spacing` items. `diarize=true` adds `speaker_id` to each word; if speaker identification can't run, the transcript comes back without labels and `X-OmniVoice-Diarization-Error` says why. |
