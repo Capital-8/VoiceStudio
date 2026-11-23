@@ -567,3 +567,39 @@ def test_dubbing_runs_on_the_batch_queue(client, monkeypatch, tmp_path):
     job.update(status="failed", error="Translation failed")
     assert client.get("/elevenlabs/v1/dubbing/dub123").json()["error"] == "Translation failed"
     assert client.get("/elevenlabs/v1/dubbing/nope").status_code == 404
+
+
+def test_ready_text_waits_for_a_sentence_or_a_long_run():
+    take = _el().take_ready_text
+    assert take("Hello there. How are", flush=False) == (["Hello there."], "How are")
+    assert take("No end yet", flush=False) == ([], "No end yet")
+    assert take("Tail", flush=True) == (["Tail"], "")
+    assert take('She said "hi." Then left. ', flush=False) == (['She said "hi."', "Then left."], "")
+    long = "word " * 80
+    ready, rest = take(long, flush=False)
+    assert ready and all(len(r) <= _el()._WS_MAX_BUFFER for r in ready)
+    assert len(rest) <= _el()._WS_MAX_BUFFER
+
+
+def test_stream_input_speaks_each_sentence_then_finishes(client, engine):
+    import base64
+
+    path = "/elevenlabs/v1/text-to-speech/default/stream-input?output_format=pcm_16000"
+    with client.websocket_connect(path) as ws:
+        ws.send_json({"text": " ", "voice_settings": {"speed": 1.1}})
+        ws.send_json({"text": "Hello there. How are"})
+        first = ws.receive_json()
+        assert len(base64.b64decode(first["audio"])) == 16000 * 2 * SECONDS
+        assert "".join(first["normalizedAlignment"]["chars"]) == "Hello there."
+        ws.send_json({"text": " you"})
+        ws.send_json({"text": ""})
+        second = ws.receive_json()
+        assert "".join(second["normalizedAlignment"]["chars"]) == "How are you"
+        assert ws.receive_json() == {"isFinal": True}
+    assert engine.calls[0]["speed"] == pytest.approx(1.1)
+    assert len(engine.calls) == 2
+
+
+def test_stream_input_rejects_a_bad_format(client):
+    with client.websocket_connect("/elevenlabs/v1/text-to-speech/default/stream-input?output_format=flac_1") as ws:
+        assert ws.receive_json()["error"] == "invalid_output_format"

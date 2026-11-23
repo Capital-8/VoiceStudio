@@ -404,6 +404,7 @@ PUT /profiles/{profile_id}/audio
 PUT /profiles/{profile_id}/image
 PUT /projects/{project_id}
 PUT /pronunciation/{entry_id}
+WS /elevenlabs/v1/text-to-speech/{voice_id}/stream-input
 WS /v1/audio/transcriptions/stream
 WS /ws/events
 WS /ws/transcribe

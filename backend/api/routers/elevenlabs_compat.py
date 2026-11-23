@@ -7,8 +7,8 @@ translate ElevenLabs requests onto the OpenAI-compatible handlers in
 admission, pronunciation dictionaries and the synthetic-audio watermark behave
 exactly as they do on ``/v1/audio/speech``.
 
-Supported: text to speech (``/v1/text-to-speech/{voice_id}``, ``/stream`` and
-``/with-timestamps``, every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
+Supported: text to speech (``/v1/text-to-speech/{voice_id}``, ``/stream``,
+``/with-timestamps`` and the ``/stream-input`` WebSocket, every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
 voice changer (``/v1/speech-to-speech/{voice_id}``), sound effects
 (``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``),
 multi-voice dialogue (``/v1/text-to-dialogue``), dubbing (``/v1/dubbing``), the
@@ -28,7 +28,7 @@ import math
 import re
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, WebSocket
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.routing import APIRoute
 from pydantic import BaseModel, Field
@@ -130,12 +130,16 @@ def _error(status: int, slug: str, message: str) -> HTTPException:
     return HTTPException(status_code=status, detail={"status": slug, "message": message})
 
 
-router = APIRouter(
+#: HTTP routes: consumer access and ElevenLabs-shaped errors. Included into
+#: ``router`` at the end of the module, next to the WebSocket route, which
+#: authorizes its own handshake (HTTP dependencies cannot run on a socket).
+_http = APIRouter(
     prefix=ELEVENLABS_PREFIX,
     tags=["ElevenLabs-Compatible API"],
     route_class=ElevenLabsErrorRoute,
     dependencies=[Depends(require_consumer)],
 )
+router = APIRouter(tags=["ElevenLabs-Compatible API"])
 
 
 # ── Output formats and audio conversion ─────────────────────────────────────
@@ -418,7 +422,7 @@ def _chunks(data: bytes, size: int = 64 * 1024):
         yield data[i:i + size]
 
 
-@router.post("/v1/text-to-speech/{voice_id}", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/text-to-speech/{voice_id}", response_class=Response, responses=AUDIO_RESPONSES)
 async def text_to_speech(
     voice_id: str,
     body: TextToSpeechRequest,
@@ -430,7 +434,7 @@ async def text_to_speech(
     return await _speech(voice_id, body, output_format, stream=False)
 
 
-@router.post("/v1/text-to-speech/{voice_id}/stream", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/text-to-speech/{voice_id}/stream", response_class=Response, responses=AUDIO_RESPONSES)
 async def text_to_speech_stream(
     voice_id: str,
     body: TextToSpeechRequest,
@@ -521,13 +525,13 @@ def _voices() -> list[dict]:
     return voices
 
 
-@router.get("/v1/voices")
+@_http.get("/v1/voices")
 def list_voices():
     """Every VoiceStudio voice profile, plus ``default``."""
     return {"voices": _voices()}
 
 
-@router.get("/v2/voices")
+@_http.get("/v2/voices")
 def search_voices(
     search: Optional[str] = Query(default=None),
     page_size: int = Query(default=10, ge=1, le=100),
@@ -552,12 +556,12 @@ def search_voices(
     }
 
 
-@router.get("/v1/voices/settings/default")
+@_http.get("/v1/voices/settings/default")
 def default_voice_settings():
     return dict(_DEFAULT_VOICE_SETTINGS)
 
 
-@router.get("/v1/voices/{voice_id}/settings")
+@_http.get("/v1/voices/{voice_id}/settings")
 def voice_settings(voice_id: str):
     _voice_or_404(voice_id)
     return dict(_DEFAULT_VOICE_SETTINGS)
@@ -570,7 +574,7 @@ def _voice_or_404(voice_id: str) -> dict:
     raise _error(404, "voice_not_found", f"Voice '{voice_id}' was not found.")
 
 
-@router.get("/v1/voices/{voice_id}")
+@_http.get("/v1/voices/{voice_id}")
 def get_voice(voice_id: str):
     return _voice_or_404(voice_id)
 
@@ -599,7 +603,7 @@ ELEVENLABS_MODEL_ALIASES = (
 )
 
 
-@router.get("/v1/models")
+@_http.get("/v1/models")
 def list_models():
     """ElevenLabs model aliases (served by the active engine) plus every
     installed VoiceStudio engine."""
@@ -675,7 +679,7 @@ async def _diarize_words(path: str, words: list[dict], num_speakers: Optional[in
     return _speaker_ids(labels), None
 
 
-@router.post("/v1/speech-to-text")
+@_http.post("/v1/speech-to-text")
 async def speech_to_text(
     file: UploadFile = File(...),
     model_id: str = Form(default="scribe_v1", description="Any value; the active VoiceStudio speech-recognition engine transcribes."),
@@ -836,7 +840,7 @@ async def _ffmpeg_ready(output_format: str) -> None:
 # ── Voice changer ───────────────────────────────────────────────────────────
 
 
-@router.post("/v1/speech-to-speech/{voice_id}", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/speech-to-speech/{voice_id}", response_class=Response, responses=AUDIO_RESPONSES)
 async def speech_to_speech(
     voice_id: str,
     audio: UploadFile = File(...),
@@ -895,7 +899,7 @@ class SoundGenerationRequest(BaseModel):
     model_config = {"extra": "allow"}
 
 
-@router.post("/v1/sound-generation", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/sound-generation", response_class=Response, responses=AUDIO_RESPONSES)
 async def sound_generation(
     body: SoundGenerationRequest,
     output_format: str = Query(default="mp3_44100_128"),
@@ -928,7 +932,7 @@ def isolation_weights_cached() -> bool:
     return os.path.isfile(os.path.join(torch.hub.get_dir(), "checkpoints", HTDEMUCS_CHECKPOINT))
 
 
-@router.post("/v1/audio-isolation", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/audio-isolation", response_class=Response, responses=AUDIO_RESPONSES)
 async def audio_isolation(
     audio: UploadFile = File(...),
     file_format: Optional[str] = Form(default=None, description="Accepted; the upload's format is detected."),
@@ -1035,7 +1039,7 @@ async def _dialogue_pcm(body: TextToDialogueRequest) -> bytes:
     return _to_int16(np.concatenate(parts)).astype("<i2").tobytes()
 
 
-@router.post("/v1/text-to-dialogue", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/text-to-dialogue", response_class=Response, responses=AUDIO_RESPONSES)
 async def text_to_dialogue(
     body: TextToDialogueRequest,
     output_format: str = Query(default="mp3_44100_128"),
@@ -1050,7 +1054,7 @@ async def text_to_dialogue(
     return await _tensor_response(samples.reshape(-1, 1), _SOURCE_RATE, output_format)
 
 
-@router.post("/v1/text-to-dialogue/stream", response_class=Response, responses=AUDIO_RESPONSES)
+@_http.post("/v1/text-to-dialogue/stream", response_class=Response, responses=AUDIO_RESPONSES)
 async def text_to_dialogue_stream(
     body: TextToDialogueRequest,
     output_format: str = Query(default="mp3_44100_128"),
@@ -1126,7 +1130,7 @@ async def _speech_with_timestamps(voice_id: str, body: TextToSpeechRequest, outp
     )
 
 
-@router.post("/v1/text-to-speech/{voice_id}/with-timestamps")
+@_http.post("/v1/text-to-speech/{voice_id}/with-timestamps")
 async def text_to_speech_with_timestamps(
     voice_id: str,
     body: TextToSpeechRequest,
@@ -1139,7 +1143,7 @@ async def text_to_speech_with_timestamps(
     return await _speech_with_timestamps(voice_id, body, output_format)
 
 
-@router.post("/v1/text-to-speech/{voice_id}/stream/with-timestamps")
+@_http.post("/v1/text-to-speech/{voice_id}/stream/with-timestamps")
 async def text_to_speech_stream_with_timestamps(
     voice_id: str,
     body: TextToSpeechRequest,
@@ -1173,7 +1177,7 @@ def _label_language(labels: Optional[str]) -> str:
     return language.strip() if isinstance(language, str) and language.strip() else "Auto"
 
 
-@router.post("/v1/voices/add")
+@_http.post("/v1/voices/add")
 async def add_voice(
     name: str = Form(...),
     files: list[UploadFile] = File(..., description="Recordings of the voice; the first is its reference."),
@@ -1195,7 +1199,7 @@ async def add_voice(
     return {"voice_id": profile["id"], "requires_verification": False}
 
 
-@router.delete("/v1/voices/{voice_id}", dependencies=[Depends(require_admin)])
+@_http.delete("/v1/voices/{voice_id}", dependencies=[Depends(require_admin)])
 async def delete_voice(voice_id: str):
     """Delete a voice profile (administrator access, as in the app)."""
     import asyncio
@@ -1235,7 +1239,7 @@ def _dub_record(job: dict) -> dict:
     }
 
 
-@router.post("/v1/dubbing")
+@_http.post("/v1/dubbing")
 async def create_dubbing(
     file: Optional[UploadFile] = File(default=None),
     source_url: Optional[str] = Form(default=None),
@@ -1265,12 +1269,12 @@ async def create_dubbing(
     return {"dubbing_id": queued["job_id"], "expected_duration_sec": 0}
 
 
-@router.get("/v1/dubbing/{dubbing_id}")
+@_http.get("/v1/dubbing/{dubbing_id}")
 def get_dubbing(dubbing_id: str):
     return _dub_record(_dub_job(dubbing_id))
 
 
-@router.get(
+@_http.get(
     "/v1/dubbing/{dubbing_id}/audio/{language_code}",
     response_class=Response,
     responses={200: {"description": "The dubbed video.", "content": {"video/mp4": {"schema": {"type": "string", "format": "binary"}}}}},
@@ -1287,7 +1291,7 @@ def get_dubbed_file(dubbing_id: str, language_code: str):
     return download_batch_output(dubbing_id, language_code)
 
 
-@router.delete("/v1/dubbing/{dubbing_id}", dependencies=[Depends(require_admin)])
+@_http.delete("/v1/dubbing/{dubbing_id}", dependencies=[Depends(require_admin)])
 def delete_dubbing(dubbing_id: str):
     """Delete a finished dubbing and its files (administrator access, as on
     the Batch page). Cancel an active one in the app first."""
@@ -1296,3 +1300,141 @@ def delete_dubbing(dubbing_id: str):
     _dub_job(dubbing_id)
     delete_batch_job(dubbing_id)
     return {"status": "ok"}
+
+
+# ── WebSocket input streaming ───────────────────────────────────────────────
+
+#: Speak without waiting for a sentence end once this much text is buffered
+#: (the last value of ElevenLabs' default chunk_length_schedule).
+_WS_MAX_BUFFER = 290
+_SENTENCE_END = re.compile(r"(?<=[.!?;:。！？；…])[\"'”’)\]]*\s+")
+
+
+def take_ready_text(buffer: str, *, flush: bool) -> tuple[list[str], str]:
+    """Split ``buffer`` into segments ready to speak and the remainder.
+
+    Complete sentences are ready; so is a long run without one (cut at its
+    last space), and everything when ``flush`` is set.
+    """
+    if flush:
+        return ([buffer.strip()] if buffer.strip() else []), ""
+    ready: list[str] = []
+    last = 0
+    for match in _SENTENCE_END.finditer(buffer):
+        segment = buffer[last:match.end()].strip()
+        if segment:
+            ready.append(segment)
+        last = match.end()
+    rest = buffer[last:]
+    while len(rest) > _WS_MAX_BUFFER:
+        cut = rest.rfind(" ", 0, _WS_MAX_BUFFER)
+        cut = cut if cut > 0 else _WS_MAX_BUFFER
+        ready.append(rest[:cut].strip())
+        rest = rest[cut:].lstrip()
+    return [r for r in ready if r], rest
+
+
+async def _ws_segment(voice_id: str, text: str, settings: Optional[VoiceSettings],
+                      model_id: Optional[str], language: Optional[str],
+                      output_format: str) -> dict:
+    """One ElevenLabs audio message for ``text``, with estimated timings."""
+    import base64
+
+    import numpy as np
+
+    from services.speech_alignment import character_alignment, speech_bounds
+
+    body = TextToSpeechRequest(text=text, model_id=model_id, language_code=language,
+                               voice_settings=settings)
+    pcm_resp = await _speech(voice_id, body, "pcm_24000", stream=False)
+    pcm = b"".join([chunk async for chunk in pcm_resp.body_iterator])
+    samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768.0
+    audio = await _tensor_response(samples.reshape(-1, 1), _SOURCE_RATE, output_format)
+    alignment = character_alignment(text, samples.size / _SOURCE_RATE,
+                                    speech=speech_bounds(samples, _SOURCE_RATE))
+    return {
+        "audio": base64.b64encode(audio.body).decode("ascii"),
+        "isFinal": None,
+        "normalizedAlignment": {
+            "chars": alignment["characters"],
+            "charStartTimesMs": [int(t * 1000) for t in alignment["character_start_times_seconds"]],
+            "charDurationsMs": [
+                int((e - s) * 1000) for s, e in zip(alignment["character_start_times_seconds"],
+                                                    alignment["character_end_times_seconds"])
+            ],
+        },
+        "alignment": None,
+    }
+
+
+@router.websocket(ELEVENLABS_PREFIX + "/v1/text-to-speech/{voice_id}/stream-input")
+async def text_to_speech_stream_input(
+    websocket: WebSocket,
+    voice_id: str,
+    model_id: Optional[str] = None,
+    output_format: str = "mp3_44100_128",
+    language_code: Optional[str] = None,
+    inactivity_timeout: float = 20.0,
+):
+    """ElevenLabs' input-streaming socket: send text as it is produced (an LLM
+    reply, say) and receive audio sentence by sentence. Messages are
+    ``{"text": ...}`` (optionally ``"flush": true``); ``{"text": ""}`` ends
+    the stream after the remaining text is spoken. Timings in
+    ``normalizedAlignment`` are estimated from each segment's speech span."""
+    import asyncio
+
+    from fastapi import WebSocketDisconnect
+
+    from api.dependencies import require_ws_access
+
+    if not await require_ws_access(websocket):
+        return
+    await websocket.accept()
+    try:
+        output_spec(output_format)
+    except HTTPException as exc:
+        await websocket.send_json({"message": _message(exc.detail), "error": "invalid_output_format", "code": 1008})
+        await websocket.close(code=1008)
+        return
+    timeout = min(max(inactivity_timeout, 5.0), 180.0)
+    settings: Optional[VoiceSettings] = None
+    buffer = ""
+    try:
+        while True:
+            try:
+                message = await asyncio.wait_for(websocket.receive_json(), timeout=timeout)
+            except asyncio.TimeoutError:
+                await websocket.send_json({"message": "No text received before the inactivity timeout.",
+                                           "error": "input_timeout_exceeded", "code": 1008})
+                await websocket.close(code=1008)
+                return
+            if not isinstance(message, dict):
+                continue
+            if isinstance(message.get("voice_settings"), dict):
+                try:
+                    settings = VoiceSettings(**message["voice_settings"])
+                except ValueError:
+                    settings = None
+            text = message.get("text")
+            end = text == ""
+            buffer += text if isinstance(text, str) else ""
+            ready, buffer = take_ready_text(buffer, flush=end or bool(message.get("flush")))
+            for segment in ready:
+                try:
+                    frame = await _ws_segment(voice_id, segment, settings, model_id,
+                                              language_code, output_format)
+                except HTTPException as exc:
+                    await websocket.send_json({"message": _message(exc.detail),
+                                               "error": _status_slug(exc), "code": 1011})
+                    await websocket.close(code=1011)
+                    return
+                await websocket.send_json(frame)
+            if end:
+                await websocket.send_json({"isFinal": True})
+                await websocket.close()
+                return
+    except WebSocketDisconnect:
+        return
+
+
+router.include_router(_http)

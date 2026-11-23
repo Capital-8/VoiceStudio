@@ -14705,6 +14705,7 @@
     },
     "summary": "Audio Isolation",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -14745,6 +14746,7 @@
     },
     "summary": "Create Dubbing",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -14786,6 +14788,7 @@
     },
     "summary": "Delete Dubbing",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    },
@@ -14824,6 +14827,7 @@
     },
     "summary": "Get Dubbing",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -14877,6 +14881,7 @@
     },
     "summary": "Get Dubbed File",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -14897,6 +14902,7 @@
     },
     "summary": "List Models",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -14982,6 +14988,7 @@
     },
     "summary": "Sound Generation",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15076,6 +15083,7 @@
     },
     "summary": "Speech To Speech",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15116,6 +15124,7 @@
     },
     "summary": "Speech To Text",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15201,6 +15210,7 @@
     },
     "summary": "Text To Dialogue",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15286,6 +15296,7 @@
     },
     "summary": "Text To Dialogue Stream",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15416,6 +15427,7 @@
     },
     "summary": "Text To Speech",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15542,6 +15554,7 @@
     },
     "summary": "Text To Speech Stream",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15603,6 +15616,7 @@
     },
     "summary": "Text To Speech Stream With Timestamps",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15664,6 +15678,7 @@
     },
     "summary": "Text To Speech With Timestamps",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15684,6 +15699,7 @@
     },
     "summary": "List Voices",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15724,6 +15740,7 @@
     },
     "summary": "Add Voice",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15743,6 +15760,7 @@
     },
     "summary": "Default Voice Settings",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15784,6 +15802,7 @@
     },
     "summary": "Delete Voice",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    },
@@ -15822,6 +15841,7 @@
     },
     "summary": "Get Voice",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15862,6 +15882,7 @@
     },
     "summary": "Voice Settings",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
@@ -15938,6 +15959,7 @@
     },
     "summary": "Search Voices",
     "tags": [
+     "ElevenLabs-Compatible API",
      "ElevenLabs-Compatible API"
     ]
    }
