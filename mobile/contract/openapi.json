@@ -14653,11 +14653,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -14822,11 +14855,14 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "video/mp4": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "The dubbed video."
      },
      "422": {
       "content": {
@@ -14894,11 +14930,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -14955,11 +15024,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -15047,11 +15149,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -15099,11 +15234,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -15196,11 +15364,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
@@ -15289,11 +15490,44 @@
     "responses": {
      "200": {
       "content": {
-       "application/json": {
-        "schema": {}
+       "audio/basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/mpeg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/ogg": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/pcm": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/wav": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
+       },
+       "audio/x-alaw-basic": {
+        "schema": {
+         "format": "binary",
+         "type": "string"
+        }
        }
       },
-      "description": "Successful Response"
+      "description": "Audio in the requested output_format."
      },
      "422": {
       "content": {
