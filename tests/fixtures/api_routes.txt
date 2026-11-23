@@ -275,6 +275,8 @@ POST /elevenlabs/v1/text-to-dialogue
 POST /elevenlabs/v1/text-to-dialogue/stream
 POST /elevenlabs/v1/text-to-speech/{voice_id}
 POST /elevenlabs/v1/text-to-speech/{voice_id}/stream
+POST /elevenlabs/v1/text-to-speech/{voice_id}/stream/with-timestamps
+POST /elevenlabs/v1/text-to-speech/{voice_id}/with-timestamps
 POST /engines/audiocpp/runtime/install
 POST /engines/diarisation/select
 POST /engines/omnivoice-gguf/gpu-offer

@@ -7,8 +7,8 @@ translate ElevenLabs requests onto the OpenAI-compatible handlers in
 admission, pronunciation dictionaries and the synthetic-audio watermark behave
 exactly as they do on ``/v1/audio/speech``.
 
-Supported: text to speech (``/v1/text-to-speech/{voice_id}`` and ``/stream``,
-every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
+Supported: text to speech (``/v1/text-to-speech/{voice_id}``, ``/stream`` and
+``/with-timestamps``, every ``output_format`` family), speech to text (``/v1/speech-to-text``), the
 voice changer (``/v1/speech-to-speech/{voice_id}``), sound effects
 (``/v1/sound-generation``), voice isolation (``/v1/audio-isolation``),
 multi-voice dialogue (``/v1/text-to-dialogue``), the voice list (``/v1/voices``, ``/v2/voices``, ``/v1/voices/{voice_id}``), default
@@ -943,3 +943,92 @@ async def text_to_dialogue_stream(
             yield data[i:i + 64 * 1024]
 
     return StreamingResponse(chunks(), media_type=resp.media_type)
+
+
+# ── Text to speech with character timings ───────────────────────────────────
+
+
+async def _recognized_words(samples, language: Optional[str]) -> tuple[list[dict], str]:
+    """Word timings of a take from the active speech-recognition engine, or
+    ``([], reason)`` when it is not installed or fails."""
+    import asyncio
+    import io as _io
+
+    import soundfile as sf
+    from starlette.datastructures import UploadFile as StarletteUpload
+
+    from api.routers.openai_compat import _transcribe_request
+    from services.asr_backend import asr_model_missing_error
+
+    if await asyncio.to_thread(asr_model_missing_error) is not None:
+        return [], "estimated"
+    buf = _io.BytesIO()
+    await asyncio.to_thread(sf.write, buf, samples, _SOURCE_RATE, format="WAV")
+    buf.seek(0)
+    try:
+        result = await _transcribe_request(
+            task="transcribe", file=StarletteUpload(buf, filename="take.wav"), model=None,
+            language=language, prompt=None, response_format="verbose_json", temperature=None,
+            timestamp_granularities=["word", "segment"],
+        )
+    except Exception as exc:  # noqa: BLE001 - timings fall back to an estimate
+        logger.info("Character timings estimated: recognition failed (%s)", type(exc).__name__)
+        return [], "estimated"
+    words = result.get("words") or []
+    return words, "recognized" if words else "estimated"
+
+
+async def _speech_with_timestamps(voice_id: str, body: TextToSpeechRequest, output_format: str) -> JSONResponse:
+    import base64
+
+    import numpy as np
+
+    from services.speech_alignment import character_alignment, speech_bounds
+
+    await _ffmpeg_ready(output_format)
+    resp = await _speech(voice_id, body, "pcm_24000", stream=False)
+    pcm = b"".join([chunk async for chunk in resp.body_iterator])
+    samples = np.frombuffer(pcm, dtype="<i2").astype(np.float32) / 32768.0
+    words, method = await _recognized_words(samples, body.language_code)
+    alignment = character_alignment(
+        body.text, samples.size / _SOURCE_RATE, words=words,
+        speech=speech_bounds(samples, _SOURCE_RATE),
+    )
+    audio = await _tensor_response(samples.reshape(-1, 1), _SOURCE_RATE, output_format)
+    return JSONResponse(
+        {
+            "audio_base64": base64.b64encode(audio.body).decode("ascii"),
+            "alignment": alignment,
+            "normalized_alignment": alignment,
+        },
+        headers={"X-OmniVoice-Alignment": method},
+    )
+
+
+@router.post("/v1/text-to-speech/{voice_id}/with-timestamps")
+async def text_to_speech_with_timestamps(
+    voice_id: str,
+    body: TextToSpeechRequest,
+    output_format: str = Query(default="mp3_44100_128"),
+):
+    """Speech plus the start and end time of every character of ``text``.
+    Timings come from recognizing the take when a speech-recognition model is
+    installed (``X-OmniVoice-Alignment: recognized``), else they are estimated
+    from the speech span (``estimated``)."""
+    return await _speech_with_timestamps(voice_id, body, output_format)
+
+
+@router.post("/v1/text-to-speech/{voice_id}/stream/with-timestamps")
+async def text_to_speech_stream_with_timestamps(
+    voice_id: str,
+    body: TextToSpeechRequest,
+    output_format: str = Query(default="mp3_44100_128"),
+):
+    """The same result as one newline-delimited JSON chunk."""
+    full = await _speech_with_timestamps(voice_id, body, output_format)
+
+    async def lines():
+        yield full.body + b"\n"
+
+    return StreamingResponse(lines(), media_type="application/x-ndjson",
+                             headers={"X-OmniVoice-Alignment": full.headers["x-omnivoice-alignment"]})

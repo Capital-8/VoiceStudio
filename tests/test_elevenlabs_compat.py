@@ -368,3 +368,41 @@ def test_text_to_dialogue_checks_every_voice_first(client, engine):
     assert res.status_code == 404
     assert res.json()["detail"]["status"] == "voice_not_found"
     assert engine.calls == []
+
+
+def test_with_timestamps_uses_recognized_words_when_available(client, engine, monkeypatch):
+    import base64
+
+    oc = importlib.import_module("api.routers.openai_compat")
+    asr = importlib.import_module("services.asr_backend")
+    monkeypatch.setattr(asr, "asr_model_missing_error", lambda: None)
+
+    async def fake(**kw):
+        assert kw["file"].file.read(4) == b"RIFF"
+        return {"text": "Hello there.", "words": [{"word": "Hello", "start": 0.05, "end": 0.2},
+                                                  {"word": "there", "start": 0.25, "end": 0.45}]}
+
+    monkeypatch.setattr(oc, "_transcribe_request", fake)
+    res = client.post("/elevenlabs/v1/text-to-speech/default/with-timestamps",
+                      params={"output_format": "pcm_16000"}, json={"text": "Hello there."})
+    assert res.status_code == 200, res.text
+    assert res.headers["x-omnivoice-alignment"] == "recognized"
+    body = res.json()
+    assert len(base64.b64decode(body["audio_base64"])) == 16000 * 2 * SECONDS
+    alignment = body["alignment"]
+    assert "".join(alignment["characters"]) == "Hello there."
+    assert alignment["character_start_times_seconds"][6] == pytest.approx(0.25)
+
+
+def test_with_timestamps_estimates_without_a_recognizer(client, engine, monkeypatch):
+    asr = importlib.import_module("services.asr_backend")
+    monkeypatch.setattr(asr, "asr_model_missing_error", lambda: {"error": "asr_model_missing"})
+    res = client.post("/elevenlabs/v1/text-to-speech/default/stream/with-timestamps",
+                      params={"output_format": "pcm_24000"}, json={"text": "Hi you"})
+    assert res.status_code == 200, res.text
+    assert res.headers["x-omnivoice-alignment"] == "estimated"
+    import json as _json
+
+    line = _json.loads(res.content.decode().strip())
+    ends = line["alignment"]["character_end_times_seconds"]
+    assert len(ends) == 6 and ends[-1] == pytest.approx(SECONDS, abs=0.01)

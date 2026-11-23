@@ -15019,6 +15019,128 @@
     ]
    }
   },
+  "/elevenlabs/v1/text-to-speech/{voice_id}/stream/with-timestamps": {
+   "post": {
+    "description": "The same result as one newline-delimited JSON chunk.",
+    "operationId": "text_to_speech_stream_with_timestamps_elevenlabs_v1_text_to_speech__voice_id__stream_with_timestamps_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "voice_id",
+      "required": true,
+      "schema": {
+       "title": "Voice Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "output_format",
+      "required": false,
+      "schema": {
+       "default": "mp3_44100_128",
+       "title": "Output Format",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextToSpeechRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Text To Speech Stream With Timestamps",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
+  "/elevenlabs/v1/text-to-speech/{voice_id}/with-timestamps": {
+   "post": {
+    "description": "Speech plus the start and end time of every character of ``text``.\nTimings come from recognizing the take when a speech-recognition model is\ninstalled (``X-OmniVoice-Alignment: recognized``), else they are estimated\nfrom the speech span (``estimated``).",
+    "operationId": "text_to_speech_with_timestamps_elevenlabs_v1_text_to_speech__voice_id__with_timestamps_post",
+    "parameters": [
+     {
+      "in": "path",
+      "name": "voice_id",
+      "required": true,
+      "schema": {
+       "title": "Voice Id",
+       "type": "string"
+      }
+     },
+     {
+      "in": "query",
+      "name": "output_format",
+      "required": false,
+      "schema": {
+       "default": "mp3_44100_128",
+       "title": "Output Format",
+       "type": "string"
+      }
+     }
+    ],
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TextToSpeechRequest"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      },
+      "description": "Successful Response"
+     },
+     "422": {
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      },
+      "description": "Validation Error"
+     }
+    },
+    "summary": "Text To Speech With Timestamps",
+    "tags": [
+     "ElevenLabs-Compatible API"
+    ]
+   }
+  },
   "/elevenlabs/v1/voices": {
    "get": {
     "description": "Every VoiceStudio voice profile, plus ``default``.",
